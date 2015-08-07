@@ -4,12 +4,12 @@
   "description": "assets browser for asset-db",
   "author": "Firebox Technology",
   "hosts": {
-    "editor-framework": "^0.3.12",
-    "asset-db": "^0.2.0"
+    "asset-db": "^0.2.1",
+    "editor-framework": "^0.3.14"
   },
   "dependencies": {
-      "ui-kit": "^0.0.6",
-      "ui-tree": "^0.0.1"
+    "ui-kit": "^0.1.0",
+    "ui-tree": "^0.1.0"
   },
   "main": "main.js",
   "menus": {
