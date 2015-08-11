@@ -133,10 +133,6 @@ Editor.registerPanel( 'assets.panel', {
         Editor.assetdb.delete(urls);
     },
 
-    'editor:hint-asset': function ( uuid ) {
-        this.curView().hintItemById(uuid);
-    },
-
     'selection:selected': function ( type, ids ) {
         if ( type !== 'asset' )
             return;
@@ -286,6 +282,10 @@ Editor.registerPanel( 'assets.panel', {
         var itemEL = this.curView()._id2el[result.oldUuid];
         this.curView().updateItemID(itemEL, result.uuid);
         itemEL.hint();
+    },
+
+    'assets:hint': function ( uuid ) {
+        this.curView().hintItemById(uuid);
     },
 
     'assets:new-asset': function ( info, isContextMenu ) {

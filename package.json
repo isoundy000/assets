@@ -54,7 +54,6 @@
         }
       },
       "messages": [
-        "editor:hint-asset",
         "selection:selected",
         "selection:unselected",
         "selection:activated",
@@ -64,6 +63,7 @@
         "asset-db:assets-deleted",
         "asset-db:asset-changed",
         "asset-db:asset-uuid-changed",
+        "assets:hint",
         "assets:new-asset",
         "assets:rename",
         "assets:delete"
