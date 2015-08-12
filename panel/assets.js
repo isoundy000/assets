@@ -139,7 +139,9 @@ Editor.registerPanel( 'assets.panel', {
 
         ids.forEach( function ( id ) {
             this.$.tree.selectItemById(id);
-            this.$.searchResult.selectItemById(id);
+            if (!this.$.searchResult.hidden) {
+                this.$.searchResult.selectItemById(id);
+            }
         }.bind(this));
     },
 
@@ -149,7 +151,9 @@ Editor.registerPanel( 'assets.panel', {
 
         ids.forEach( function ( id ) {
             this.$.tree.unselectItemById(id);
-            this.$.searchResult.unselectItemById(id);
+            if (!this.$.searchResult.hidden) {
+                this.$.searchResult.unselectItemById(id);
+            }
         }.bind(this));
     },
 
@@ -235,12 +239,15 @@ Editor.registerPanel( 'assets.panel', {
         var self = this;
 
         filterResults.forEach(function ( result ) {
-            var views = [ 'tree', 'searchResult' ];
-            views.forEach( function (name) {
-                self.$[name].moveItemById( result.uuid,
+            self.$.tree.moveItemById( result.uuid,
+                                      result.parentUuid,
+                                      Path.basenameNoExt(result.destPath) );
+
+            if (!self.$.searchResult.hidden) {
+                self.$.searchResult.moveItemById( result.uuid,
                                           result.parentUuid,
                                           Path.basenameNoExt(result.destPath) );
-            });
+            }
         });
 
         // flash moved
@@ -265,7 +272,9 @@ Editor.registerPanel( 'assets.panel', {
 
         results.forEach( function ( result ) {
             this.$.tree.removeItemById( result.uuid );
-            this.$.searchResult.removeItemById( result.uuid );
+            if (!this.$.searchResult.hidden) {
+                this.$.searchResult.removeItemById( result.uuid );
+            }
         }.bind(this) );
 
         var uuids = results.map( function ( result ) {
@@ -383,13 +392,38 @@ Editor.registerPanel( 'assets.panel', {
 
         if (this.filterText) {
             this.$.searchResult.hidden = false;
+            this.$.locate.hidden = false;
             this.$.tree.hidden = true;
             return;
         }
 
         this.$.searchResult.hidden = true;
+        this.$.locate.hidden = true;
         this.$.searchResult.clear();
         this.$.tree.hidden = false;
+    },
+
+    _onLocateClick: function (event) {
+        event.stopPropagation();
+
+        var ids = Editor.Selection.curSelection('asset');
+        var locateItem = false;
+        ids.forEach( function (item) {
+            if (this.$.searchResult._id2el[item]) {
+                locateItem = true;
+                return;
+            }
+            locateItem = false;
+        }.bind(this));
+
+        if (!locateItem) {
+            return;
+        }
+        this.filterText = '';
+        this.$.tree.hintItemById(ids[0]);
+        for (var i = 1; i < ids.length; ++i) {
+            this.$.tree._id2el[ids[i]].hint();
+        }
     },
 
     curView: function () {
