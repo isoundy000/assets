@@ -1,6 +1,6 @@
 {
   "name": "assets",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "assets browser for asset-db",
   "author": "Firebox Technology",
   "hosts": {
@@ -8,8 +8,8 @@
     "editor-framework": "^0.3.14"
   },
   "dependencies": {
-    "ui-kit": "^0.1.0",
-    "ui-tree": "^0.1.0"
+    "ui-kit": "^0.1.2",
+    "ui-tree": "^0.1.2"
   },
   "main": "main.js",
   "menus": {
