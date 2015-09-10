@@ -116,19 +116,24 @@ Editor.registerWidget( 'assets-item', {
 
     //
     setIcon: function ( type ) {
+        var url;
+
         if ( type === 'texture' ) {
-            this.$.icon.src = 'thumbnail://' + this._userId;
+            url = 'thumbnail://' + this._userId;
+            this.$.icon.style.backgroundImage = 'url("' + url + '")';
             return;
         }
 
         var metaCtor = Editor.metas[type];
         if ( metaCtor && metaCtor['asset-icon'] ) {
-            this.$.icon.src = metaCtor['asset-icon'];
+            url = metaCtor['asset-icon'];
+            this.$.icon.style.backgroundImage = 'url("' + url + '")';
             return;
         }
 
         // fallback to default icon
-        this.$.icon.src = 'packages://assets/static/icon/' + type + '.png';
+        url = 'packages://assets/static/icon/' + type + '.png';
+        this.$.icon.style.backgroundImage = 'url("' + url + '")';
     },
 
     //
