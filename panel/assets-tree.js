@@ -477,7 +477,8 @@ Polymer({
 
         // process drop
         if ( event.detail.dragType === 'node' ) {
-            Editor.info('TODO: @Jare, please implement Prefab!');
+            var id = dragItems[0];
+            Editor.sendToPanel('scene.panel', 'scene:create-prefab', id, destUrl);
         }
         else if ( event.detail.dragType === 'asset' ) {
             if ( targetEL ) {
