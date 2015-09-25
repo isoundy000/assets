@@ -28,8 +28,6 @@ function _getNameCollisions(itemELs, list) {
 }
 
 Polymer({
-    is: 'assets-tree',
-
     behaviors: [EditorUI.focusable, EditorUI.droppable, EditorUI.idtree],
 
     hostAttributes: {

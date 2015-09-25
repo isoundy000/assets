@@ -3,8 +3,6 @@
     var Path = require('fire-path');
 
     Polymer({
-        is: 'assets-search-result',
-
         properties: {
             assets: {
                 type: Array,

@@ -3,8 +3,6 @@ var Path = require('fire-path');
 var Fs = require('fire-fs');
 
 Editor.registerPanel( 'assets.panel', {
-    is: 'editor-assets',
-
     properties: {
         activeItemUrl: {
             type: String,
