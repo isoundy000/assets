@@ -27,7 +27,7 @@ function _getNameCollisions(itemELs, list) {
     return collisions;
 }
 
-Polymer({
+Editor.registerElement({
     behaviors: [EditorUI.focusable, EditorUI.droppable, EditorUI.idtree],
 
     hostAttributes: {
@@ -150,7 +150,7 @@ Polymer({
 
         var url = element.name + element.extname;
         var parentEL = Polymer.dom(element).parentNode;
-        while (parentEL instanceof Editor.widgets['assets-item']) {
+        while (parentEL.tagName === 'ASSETS-ITEM' ) {
             if (parentEL.assetType === 'mount') {
                 url = parentEL.name + '://' + url;
                 break;
@@ -184,8 +184,7 @@ Polymer({
 
     addNewItemById: function ( uuid, parentID, name, extname, assetType ) {
         var parentEL = this._id2el[parentID];
-        var ctor = Editor.widgets['assets-item'];
-        var newEL = new ctor();
+        var newEL = document.createElement('assets-item');
 
         this.addItem( parentEL, newEL, {
             id: uuid,
@@ -229,8 +228,7 @@ Polymer({
     },
 
     _newEntryRecursively: function ( entry ) {
-        var ctor = Editor.widgets['assets-item'];
-        var el = new ctor();
+        var el = document.createElement('assets-item');
 
         if ( entry.children ) {
             entry.children.forEach( function ( childEntry ) {
@@ -540,7 +538,7 @@ Polymer({
     // highlighting
 
     _highlightBorder: function ( itemEL ) {
-        if ( itemEL && itemEL instanceof Editor.widgets['assets-item'] ) {
+        if ( itemEL && itemEL.tagName === 'ASSETS-ITEM' ) {
             var style = this.$.highlightBorder.style;
             style.display = 'block';
             style.left = (itemEL.offsetLeft-2) + 'px';

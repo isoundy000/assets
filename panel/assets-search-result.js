@@ -2,7 +2,7 @@
     var Url = require('fire-url');
     var Path = require('fire-path');
 
-    Polymer({
+    Editor.registerElement({
         properties: {
             assets: {
                 type: Array,
@@ -321,8 +321,7 @@
                         var name = Path.basenameNoExt(info.path);
                         var extname = Path.extname(info.path);
                         if (this.validate(name, text)) {
-                            var ctor = Editor.widgets['assets-item'];
-                            var newEL = new ctor();
+                            var newEL = document.createElement('assets-item');
 
                             this.addItem(this, newEL, {
                                 id: info.uuid,

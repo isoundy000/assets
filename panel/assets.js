@@ -189,8 +189,7 @@ Editor.registerPanel( 'assets.panel', {
 
             if ( !self.$.searchResult.hidden ) {
                 if ( self.$.searchResult.validate( baseNameNoExt, self.filterText) ) {
-                    var ctor = Editor.widgets['assets-item'];
-                    var newEL = new ctor();
+                    var newEL = document.createElement('assets-item');
                     self.$.searchResult.addItem( self.curView(), newEL, {
                         id: result.uuid,
                         name: baseNameNoExt,

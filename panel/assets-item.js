@@ -36,7 +36,7 @@ function _binaryInsert( parentEL, el ) {
     }
 }
 
-Editor.registerWidget( 'assets-item', {
+Editor.registerElement({
     hostAttributes: {
         draggable: 'true',
     },
