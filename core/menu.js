@@ -40,7 +40,7 @@ function getContextTemplate () {
         },
 
         {
-            label: Fire.isDarwin ? 'Reveal in Finder' : 'Show in Explorer',
+            label: Editor.isDarwin ? 'Reveal in Finder' : 'Show in Explorer',
             click: function() {
                 var contextUuids = Editor.Selection.contexts('asset');
                 if ( contextUuids.length > 0 ) {
@@ -57,7 +57,7 @@ function getContextTemplate () {
         },
 
         {
-            label: Fire.isDarwin ? 'Reveal in Library' : 'Show in Library',
+            label: Editor.isDarwin ? 'Reveal in Library' : 'Show in Library',
             visible: Editor.isDev,
             click: function() {
                 var contextUuids = Editor.Selection.contexts('asset');
