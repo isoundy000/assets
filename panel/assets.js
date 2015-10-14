@@ -1,4 +1,5 @@
 (function () {
+var Url = require('fire-url');
 var Path = require('fire-path');
 var Fs = require('fire-fs');
 
@@ -22,6 +23,8 @@ Editor.registerPanel( 'assets.panel', {
     },
 
     ready: function () {
+        this._activeWhenCreated = null;
+
         window.addEventListener( 'beforeunload', function ( event ) {
             var states = this.$.tree.dumpItemStates();
             this.profiles.local['item-states'] = states;
@@ -177,7 +180,7 @@ Editor.registerPanel( 'assets.panel', {
         var self = this;
         var hintResults = [];
 
-        results.forEach(function ( result ) {
+        results.forEach( result => {
             var baseNameNoExt = Path.basenameNoExt(result.path);
             self.$.tree.addNewItemById(
                 result.uuid,
@@ -186,6 +189,11 @@ Editor.registerPanel( 'assets.panel', {
                 Path.extname(result.path),
                 result.type
             );
+
+            if ( this._activeWhenCreated === result.url ) {
+                this._activeWhenCreated = null;
+                Editor.Selection.select('asset', result.uuid);
+            }
 
             if ( !self.$.searchResult.hidden ) {
                 if ( self.$.searchResult.validate( baseNameNoExt, self.filterText) ) {
@@ -338,7 +346,10 @@ Editor.registerPanel( 'assets.panel', {
         if ( info.url ) {
             data = Fs.readFileSync(Editor.url(info.url), {encoding:'utf8'});
         }
-        Editor.assetdb.create( Path.join(parentUrl, info.name), data );
+
+        var assetUrl = Url.join(parentUrl, info.name);
+        this._activeWhenCreated = assetUrl;
+        Editor.assetdb.create( assetUrl, data );
     },
 
     'assets:rename': function ( uuid ) {
