@@ -131,7 +131,27 @@ Editor.registerPanel( 'assets.panel', {
             var el = this.curView()._id2el[id];
             return this.curView().getUrl(el);
         }.bind(this));
-        Editor.assetdb.delete(urls);
+
+        var msg = urls;
+        if ( msg.length > 3 ) {
+            msg = msg.slice(0,3);
+            msg.push('...');
+        }
+        msg = msg.join('\n');
+
+        var Remote = require('remote');
+        var Dialog = Remote.require('dialog');
+        var result = Dialog.showMessageBox(Remote.getCurrentWindow(), {
+            type: 'warning',
+            buttons: ['Delete','Cancel'],
+            title: 'Delete selected asset?',
+            message: msg,
+            detail: 'Your cannot undo this action.'
+        });
+
+        if ( result === 0 ) {
+            Editor.assetdb.delete(urls);
+        }
     },
 
     'selection:selected': function ( type, ids ) {
