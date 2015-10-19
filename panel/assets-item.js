@@ -1,263 +1,264 @@
 (function () {
+    'use strict';
 
-function _binaryIndexOf ( elements, key ) {
-    var lo = 0;
-    var hi = elements.length - 1;
-    var mid, el;
+    function _binaryIndexOf ( elements, key ) {
+        let lo = 0;
+        let hi = elements.length - 1;
+        let mid;
 
-    while (lo <= hi) {
-        mid = ((lo + hi) >> 1);
-        name = elements[mid].name + elements[mid].type;
+        while (lo <= hi) {
+            mid = ((lo + hi) >> 1);
+            let name = elements[mid].name + elements[mid].type;
 
-        if (name < key) {
-            lo = mid + 1;
+            if (name < key) {
+                lo = mid + 1;
+            }
+            else if (name > key) {
+                hi = mid - 1;
+            }
+            else {
+                return mid;
+            }
         }
-        else if (name > key) {
-            hi = mid - 1;
+        return lo;
+    }
+
+    function _binaryInsert( parentEL, el ) {
+        var parentDOM = Polymer.dom(parentEL);
+
+        var idx = _binaryIndexOf( parentDOM.children, el.name + el.type );
+        if ( idx === -1 ) {
+            parentDOM.appendChild(el);
         }
         else {
-            return mid;
+            if ( el !== parentDOM.children[idx] ) {
+                parentDOM.insertBefore(el, parentDOM.children[idx]);
+            }
         }
     }
-    return lo;
-}
 
-function _binaryInsert( parentEL, el ) {
-    var parentDOM = Polymer.dom(parentEL);
-
-    var idx = _binaryIndexOf( parentDOM.children, el.name + el.type );
-    if ( idx === -1 ) {
-        parentDOM.appendChild(el);
-    }
-    else {
-        if ( el !== parentDOM.children[idx] ) {
-            parentDOM.insertBefore(el, parentDOM.children[idx]);
-        }
-    }
-}
-
-Editor.registerElement({
-    hostAttributes: {
-        draggable: 'true',
-    },
-
-    properties: {
-        // basic
-
-        foldable: {
-            type: Boolean,
-            value: false,
-            notify: true,
-            reflectToAttribute: true,
+    Editor.registerElement({
+        hostAttributes: {
+            draggable: 'true',
         },
 
-        folded: {
-            type: Boolean,
-            value: false,
-            notify: true,
-            reflectToAttribute: true,
+        properties: {
+            // basic
+
+            foldable: {
+                type: Boolean,
+                value: false,
+                notify: true,
+                reflectToAttribute: true,
+            },
+
+            folded: {
+                type: Boolean,
+                value: false,
+                notify: true,
+                reflectToAttribute: true,
+            },
+
+            selected: {
+                type: Boolean,
+                value: false,
+                notify: true,
+                reflectToAttribute: true,
+            },
+
+            name: {
+                type: String,
+                value: '',
+            },
+
+            // advance
+
+            extname: {
+                type: String,
+                value: '',
+            },
+
+            assetType: {
+                type: String,
+                value: '',
+            },
+
+            conflicted: {
+                type: Boolean,
+                value: false,
+                reflectToAttribute: true
+            },
+
+            highlighted: {
+                type: Boolean,
+                value: false,
+                reflectToAttribute: true
+            },
+
+            invalid: {
+                type: Boolean,
+                value: false,
+                reflectToAttribute: true
+            },
         },
 
-        selected: {
-            type: Boolean,
-            value: false,
-            notify: true,
-            reflectToAttribute: true,
+        listeners: {
+            'mousedown': '_onMouseDown',
+            'click': '_onClick',
+            'dblclick': '_onDblClick',
         },
 
-        name: {
-            type: String,
-            value: '',
+        ready: function () {
+            this._renaming = false;
+            this._userId = '';
         },
 
-        // advance
+        //
+        setIcon: function ( type ) {
+            var url;
 
-        extname: {
-            type: String,
-            value: '',
-        },
+            if ( type === 'texture' ) {
+                url = 'thumbnail://' + this._userId;
+                this.$.icon.style.backgroundImage = 'url("' + url + '")';
+                return;
+            }
 
-        assetType: {
-            type: String,
-            value: '',
-        },
+            var metaCtor = Editor.metas[type];
+            if ( metaCtor && metaCtor['asset-icon'] ) {
+                url = metaCtor['asset-icon'];
+                this.$.icon.style.backgroundImage = 'url("' + url + '")';
+                return;
+            }
 
-        conflicted: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
-        },
-
-        highlighted: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
-        },
-
-        invalid: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
-        },
-    },
-
-    listeners: {
-        'mousedown': '_onMouseDown',
-        'click': '_onClick',
-        'dblclick': '_onDblClick',
-    },
-
-    ready: function () {
-        this._renaming = false;
-        this._userId = '';
-    },
-
-    //
-    setIcon: function ( type ) {
-        var url;
-
-        if ( type === 'texture' ) {
-            url = 'thumbnail://' + this._userId;
+            // fallback to default icon
+            url = 'packages://assets/static/icon/' + type + '.png';
             this.$.icon.style.backgroundImage = 'url("' + url + '")';
-            return;
-        }
+        },
 
-        var metaCtor = Editor.metas[type];
-        if ( metaCtor && metaCtor['asset-icon'] ) {
-            url = metaCtor['asset-icon'];
-            this.$.icon.style.backgroundImage = 'url("' + url + '")';
-            return;
-        }
+        //
 
-        // fallback to default icon
-        url = 'packages://assets/static/icon/' + type + '.png';
-        this.$.icon.style.backgroundImage = 'url("' + url + '")';
-    },
+        _nameClass: function ( name ) {
+            if ( !name )
+                return 'no-name';
+            return 'name';
+        },
 
-    //
+        _nameText: function ( name ) {
+            if ( !name )
+                return 'No Name';
+            return name;
+        },
 
-    _nameClass: function ( name ) {
-        if ( !name )
-            return 'no-name';
-        return 'name';
-    },
+        _foldIconClass: function ( folded ) {
+            if ( folded )
+                return 'fa fa-caret-right';
 
-    _nameText: function ( name ) {
-        if ( !name )
-            return 'No Name';
-        return name;
-    },
+            return 'fa fa-caret-down';
+        },
 
-    _foldIconClass: function ( folded ) {
-        if ( folded )
-            return 'fa fa-caret-right';
+        // events
 
-        return 'fa fa-caret-down';
-    },
+        _onMouseDown: function ( event ) {
+            if ( event.which !== 1 )
+                return;
 
-    // events
+            event.stopPropagation();
 
-    _onMouseDown: function ( event ) {
-        if ( event.which !== 1 )
-            return;
+            if ( this._renaming ) {
+                return;
+            }
 
-        event.stopPropagation();
+            var shift = false;
+            var toggle = false;
 
-        if ( this._renaming ) {
-            return;
-        }
+            if ( event.shiftKey ) {
+                shift = true;
+            } else if ( event.metaKey || event.ctrlKey ) {
+                toggle = true;
+            }
 
-        var shift = false;
-        var toggle = false;
+            this.fire('item-selecting', {
+                toggle: toggle,
+                shift: shift,
+            });
 
-        if ( event.shiftKey ) {
-            shift = true;
-        } else if ( event.metaKey || event.ctrlKey ) {
-            toggle = true;
-        }
+        },
 
-        this.fire('item-selecting', {
-            toggle: toggle,
-            shift: shift,
-        });
+        _onClick: function ( event ) {
+            if ( event.which !== 1 )
+                return;
 
-    },
+            event.stopPropagation();
 
-    _onClick: function ( event ) {
-        if ( event.which !== 1 )
-            return;
+            var shift = false;
+            var toggle = false;
 
-        event.stopPropagation();
+            if ( event.shiftKey ) {
+                shift = true;
+            } else if ( event.metaKey || event.ctrlKey ) {
+                toggle = true;
+            }
 
-        var shift = false;
-        var toggle = false;
+            this.fire('item-select', {
+                toggle: toggle,
+                shift: shift,
+            });
+        },
 
-        if ( event.shiftKey ) {
-            shift = true;
-        } else if ( event.metaKey || event.ctrlKey ) {
-            toggle = true;
-        }
+        _onDblClick: function ( event ) {
+            if ( event.which !== 1 )
+                return;
 
-        this.fire('item-select', {
-            toggle: toggle,
-            shift: shift,
-        });
-    },
+            if ( event.shiftKey || event.metaKey || event.ctrlKey ) {
+                return;
+            }
 
-    _onDblClick: function ( event ) {
-        if ( event.which !== 1 )
-            return;
+            event.stopPropagation();
+            this.fire('open-asset', {
+                uuid: this._userId
+            });
+        },
 
-        if ( event.shiftKey || event.metaKey || event.ctrlKey ) {
-            return;
-        }
+        _onFoldMouseDown: function ( event ) {
+            event.stopPropagation();
+        },
 
-        event.stopPropagation();
-        this.fire('open-asset', {
-            uuid: this._userId
-        });
-    },
+        _onFoldClick: function ( event ) {
+            event.stopPropagation();
 
-    _onFoldMouseDown: function ( event ) {
-        event.stopPropagation();
-    },
+            if ( event.which !== 1 )
+                return;
 
-    _onFoldClick: function ( event ) {
-        event.stopPropagation();
+            this.folded = !this.folded;
+        },
 
-        if ( event.which !== 1 )
-            return;
+        _onFoldDblClick: function ( event ) {
+            event.stopPropagation();
+        },
 
-        this.folded = !this.folded;
-    },
+        insertItem: function ( el ) {
+            _binaryInsert( this, el );
+        },
 
-    _onFoldDblClick: function ( event ) {
-        event.stopPropagation();
-    },
+        canAddChild: function () {
+            return this.assetType === 'folder' ||
+                   this.assetType === 'mount'
+                   // TODO: this.isFolderAsset
+                   ;
+        },
 
-    insertItem: function ( el ) {
-        _binaryInsert( this, el );
-    },
+        hint: function ( color, duration ) {
+            color = color || 'white';
+            duration = duration || 1000;
 
-    canAddChild: function () {
-        return this.assetType === 'folder' ||
-               this.assetType === 'mount'
-               // TODO: this.isFolderAsset
-               ;
-    },
-
-    hint: function ( color, duration ) {
-        color = color || 'white';
-        duration = duration || 1000;
-
-        var computedStyle = window.getComputedStyle(this.$.bar);
-        this.$.bar.animate([
-            { background: color, transform: 'scale(1.2)' },
-            { background: computedStyle.backgroundColor, transform: 'scale(1)' }
-        ], {
-            duration: duration
-        });
-    },
-});
+            var computedStyle = window.getComputedStyle(this.$.bar);
+            this.$.bar.animate([
+                { background: color, transform: 'scale(1.2)' },
+                { background: computedStyle.backgroundColor, transform: 'scale(1)' }
+            ], {
+                duration: duration
+            });
+        },
+    });
 
 })();

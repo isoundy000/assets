@@ -1,478 +1,480 @@
 (function () {
-var Url = require('fire-url');
-var Path = require('fire-path');
-var Fs = require('fire-fs');
+    'use strict';
 
-Editor.registerPanel( 'assets.panel', {
-    properties: {
-        activeItemUrl: {
-            type: String,
-            value: '',
+    var Url = require('fire-url');
+    var Path = require('fire-path');
+    var Fs = require('fire-fs');
+
+    Editor.registerPanel( 'assets.panel', {
+        properties: {
+            activeItemUrl: {
+                type: String,
+                value: '',
+            },
+
+            filterText: {
+                type: String,
+                value: '',
+                observer: '_onFilterTextChanged'
+            },
         },
 
-        filterText: {
-            type: String,
-            value: '',
-            observer: '_onFilterTextChanged'
+        listeners: {
+            'assets-tree-ready': '_onAssetsTreeReady',
+            'open-asset': '_onOpenAsset',
         },
-    },
 
-    listeners: {
-        'assets-tree-ready': '_onAssetsTreeReady',
-        'open-asset': '_onOpenAsset',
-    },
+        ready: function () {
+            this._activeWhenCreated = null;
 
-    ready: function () {
-        this._activeWhenCreated = null;
+            window.addEventListener( 'beforeunload', function ( event ) {
+                var states = this.$.tree.dumpItemStates();
+                this.profiles.local['item-states'] = states;
+                this.profiles.local.save();
 
-        window.addEventListener( 'beforeunload', function ( event ) {
-            var states = this.$.tree.dumpItemStates();
-            this.profiles.local['item-states'] = states;
-            this.profiles.local.save();
+                // NOTE: this will prevent window reload
+                // event.returnValue = false;
+            }.bind(this) );
+        },
 
-            // NOTE: this will prevent window reload
-            // event.returnValue = false;
-        }.bind(this) );
-    },
-
-    focusOnSearch: function ( event ) {
-        if ( event ) {
-            event.stopPropagation();
-        }
-
-        this.$.search.setFocus();
-    },
-
-    selectPrev: function ( event ) {
-        if ( event ) {
-            event.stopPropagation();
-            event.preventDefault();
-        }
-
-        this.curView().selectPrev(true);
-    },
-
-    selectNext: function ( event ) {
-        if ( event ) {
-            event.stopPropagation();
-            event.preventDefault();
-        }
-
-        this.curView().selectNext(true);
-    },
-
-    // TODO: make it better
-    shiftSelectPrev: function ( event ) {
-        if ( event ) {
-            event.stopPropagation();
-            event.preventDefault();
-        }
-
-        this.curView().selectPrev(false);
-    },
-
-    // TODO: make it better
-    shiftSelectNext: function ( event ) {
-        if ( event ) {
-            event.stopPropagation();
-            event.preventDefault();
-        }
-
-        this.curView().selectNext(false);
-    },
-
-    foldCurrent: function ( event ) {
-        if ( event ) {
-            event.stopPropagation();
-            event.preventDefault();
-        }
-
-        var activeEL = this.$.tree._activeElement;
-        if ( activeEL ) {
-            if ( activeEL.foldable && !activeEL.folded ) {
-                activeEL.folded = true;
-            }
-        }
-    },
-
-    foldupCurrent: function ( event ) {
-        if ( event ) {
-            event.stopPropagation();
-            event.preventDefault();
-        }
-
-        var activeEL = this.$.tree._activeElement;
-        if ( activeEL ) {
-            if ( activeEL.foldable && activeEL.folded ) {
-                activeEL.folded = false;
-            }
-        }
-    },
-
-    renameCurrentSelected: function ( event ) {
-        if ( event ) {
-            event.stopPropagation();
-            event.preventDefault();
-        }
-
-        if ( this.curView()._activeElement ) {
-            this.curView().rename(this.curView()._activeElement);
-        }
-    },
-
-    deleteCurrentSelected: function ( event ) {
-        if ( event ) {
-            event.stopPropagation();
-            event.preventDefault();
-        }
-
-        var ids = Editor.Selection.curSelection('asset');
-        var urls = ids.map(function (id) {
-            var el = this.curView()._id2el[id];
-            return this.curView().getUrl(el);
-        }.bind(this));
-
-        var msg = urls;
-        if ( msg.length > 3 ) {
-            msg = msg.slice(0,3);
-            msg.push('...');
-        }
-        msg = msg.join('\n');
-
-        var Remote = require('remote');
-        var Dialog = Remote.require('dialog');
-        var result = Dialog.showMessageBox(Remote.getCurrentWindow(), {
-            type: 'warning',
-            buttons: ['Delete','Cancel'],
-            title: 'Delete selected asset?',
-            message: msg,
-            detail: 'Your cannot undo this action.'
-        });
-
-        if ( result === 0 ) {
-            Editor.assetdb.delete(urls);
-        }
-    },
-
-    'selection:selected': function ( type, ids ) {
-        if ( type !== 'asset' )
-            return;
-
-        ids.forEach( function ( id ) {
-            this.$.tree.selectItemById(id);
-            if (!this.$.searchResult.hidden) {
-                this.$.searchResult.selectItemById(id);
-            }
-        }.bind(this));
-    },
-
-    'selection:unselected': function ( type, ids ) {
-        if ( type !== 'asset' )
-            return;
-
-        ids.forEach( function ( id ) {
-            this.$.tree.unselectItemById(id);
-            if (!this.$.searchResult.hidden) {
-                this.$.searchResult.unselectItemById(id);
-            }
-        }.bind(this));
-    },
-
-    'selection:activated': function ( type, id ) {
-        if ( type !== 'asset' )
-            return;
-
-        if ( !id )
-            return;
-
-        this.curView().activeItemById(id);
-        this.activeItemUrl = this.curView().getUrl(this.curView()._activeElement);
-    },
-
-    'selection:deactivated': function ( type, id ) {
-        if ( type !== 'asset' )
-            return;
-
-        this.curView().deactiveItemById(id);
-    },
-
-    'asset-db:assets-created': function ( results ) {
-        var self = this;
-        var hintResults = [];
-
-        results.forEach( result => {
-            var baseNameNoExt = Path.basenameNoExt(result.path);
-            self.$.tree.addNewItemById(
-                result.uuid,
-                result.parentUuid,
-                baseNameNoExt,
-                Path.extname(result.path),
-                result.type
-            );
-
-            if ( this._activeWhenCreated === result.url ) {
-                this._activeWhenCreated = null;
-                Editor.Selection.select('asset', result.uuid);
+        focusOnSearch: function ( event ) {
+            if ( event ) {
+                event.stopPropagation();
             }
 
-            if ( !self.$.searchResult.hidden ) {
-                if ( self.$.searchResult.validate( baseNameNoExt, self.filterText) ) {
-                    var newEL = document.createElement('assets-item');
-                    self.$.searchResult.addItem( self.curView(), newEL, {
-                        id: result.uuid,
-                        name: baseNameNoExt,
+            this.$.search.setFocus();
+        },
+
+        selectPrev: function ( event ) {
+            if ( event ) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            this.curView().selectPrev(true);
+        },
+
+        selectNext: function ( event ) {
+            if ( event ) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            this.curView().selectNext(true);
+        },
+
+        // TODO: make it better
+        shiftSelectPrev: function ( event ) {
+            if ( event ) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            this.curView().selectPrev(false);
+        },
+
+        // TODO: make it better
+        shiftSelectNext: function ( event ) {
+            if ( event ) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            this.curView().selectNext(false);
+        },
+
+        foldCurrent: function ( event ) {
+            if ( event ) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            var activeEL = this.$.tree._activeElement;
+            if ( activeEL ) {
+                if ( activeEL.foldable && !activeEL.folded ) {
+                    activeEL.folded = true;
+                }
+            }
+        },
+
+        foldupCurrent: function ( event ) {
+            if ( event ) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            var activeEL = this.$.tree._activeElement;
+            if ( activeEL ) {
+                if ( activeEL.foldable && activeEL.folded ) {
+                    activeEL.folded = false;
+                }
+            }
+        },
+
+        renameCurrentSelected: function ( event ) {
+            if ( event ) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            if ( this.curView()._activeElement ) {
+                this.curView().rename(this.curView()._activeElement);
+            }
+        },
+
+        deleteCurrentSelected: function ( event ) {
+            if ( event ) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            var ids = Editor.Selection.curSelection('asset');
+            var urls = ids.map(function (id) {
+                var el = this.curView()._id2el[id];
+                return this.curView().getUrl(el);
+            }.bind(this));
+
+            var msg = urls;
+            if ( msg.length > 3 ) {
+                msg = msg.slice(0,3);
+                msg.push('...');
+            }
+            msg = msg.join('\n');
+
+            var Remote = require('remote');
+            var Dialog = Remote.require('dialog');
+            var result = Dialog.showMessageBox(Remote.getCurrentWindow(), {
+                type: 'warning',
+                buttons: ['Delete','Cancel'],
+                title: 'Delete selected asset?',
+                message: msg,
+                detail: 'Your cannot undo this action.'
+            });
+
+            if ( result === 0 ) {
+                Editor.assetdb.delete(urls);
+            }
+        },
+
+        'selection:selected': function ( type, ids ) {
+            if ( type !== 'asset' )
+                return;
+
+            ids.forEach( function ( id ) {
+                this.$.tree.selectItemById(id);
+                if (!this.$.searchResult.hidden) {
+                    this.$.searchResult.selectItemById(id);
+                }
+            }.bind(this));
+        },
+
+        'selection:unselected': function ( type, ids ) {
+            if ( type !== 'asset' )
+                return;
+
+            ids.forEach( function ( id ) {
+                this.$.tree.unselectItemById(id);
+                if (!this.$.searchResult.hidden) {
+                    this.$.searchResult.unselectItemById(id);
+                }
+            }.bind(this));
+        },
+
+        'selection:activated': function ( type, id ) {
+            if ( type !== 'asset' )
+                return;
+
+            if ( !id )
+                return;
+
+            this.curView().activeItemById(id);
+            this.activeItemUrl = this.curView().getUrl(this.curView()._activeElement);
+        },
+
+        'selection:deactivated': function ( type, id ) {
+            if ( type !== 'asset' )
+                return;
+
+            this.curView().deactiveItemById(id);
+        },
+
+        'asset-db:assets-created': function ( results ) {
+            var self = this;
+            var hintResults = [];
+
+            results.forEach( result => {
+                var baseNameNoExt = Path.basenameNoExt(result.path);
+                self.$.tree.addNewItemById(
+                    result.uuid,
+                    result.parentUuid,
+                    baseNameNoExt,
+                    Path.extname(result.path),
+                    result.type
+                );
+
+                if ( this._activeWhenCreated === result.url ) {
+                    this._activeWhenCreated = null;
+                    Editor.Selection.select('asset', result.uuid);
+                }
+
+                if ( !self.$.searchResult.hidden ) {
+                    if ( self.$.searchResult.validate( baseNameNoExt, self.filterText) ) {
+                        var newEL = document.createElement('assets-item');
+                        self.$.searchResult.addItem( self.curView(), newEL, {
+                            id: result.uuid,
+                            name: baseNameNoExt,
+                        });
+                        newEL.assetType = result.type;
+                        newEL.extname = Path.extname(result.path);
+                        newEL.setIcon( result.type );
+                        hintResults.push(result);
+                    }
+                }
+                else {
+                    var foundParentInResults = results.some(function (result2) {
+                        return result2.uuid === result.parentUuid;
                     });
-                    newEL.assetType = result.type;
-                    newEL.extname = Path.extname(result.path);
-                    newEL.setIcon( result.type );
-                    hintResults.push(result);
-                }
-            }
-            else {
-                var foundParentInResults = results.some(function (result2) {
-                    return result2.uuid === result.parentUuid;
-                });
-                if ( !foundParentInResults ) {
-                    hintResults.push(result);
-                }
-            }
-        });
-
-        var curView = self.curView();
-        hintResults.forEach(function ( result ) {
-            requestAnimationFrame( function () {
-                var itemEL = curView._id2el[result.uuid];
-                itemEL.hint();
-                var parentEL = curView._id2el[result.parentUuid];
-                if (parentEL) {
-                    parentEL.folded = false;
+                    if ( !foundParentInResults ) {
+                        hintResults.push(result);
+                    }
                 }
             });
-        });
-    },
 
-    'asset-db:assets-moved': function ( results ) {
-        var filterResults = Editor.Utils.arrayCmpFilter ( results, function ( a, b ) {
-            if ( Path.contains( a.srcPath, b.srcPath ) ) {
-                return 1;
-            }
-            if ( Path.contains( b.srcPath, a.srcPath ) ) {
-                return -1;
-            }
-            return 0;
-        });
-        var self = this;
+            var curView = self.curView();
+            hintResults.forEach(function ( result ) {
+                window.requestAnimationFrame( function () {
+                    var itemEL = curView._id2el[result.uuid];
+                    itemEL.hint();
+                    var parentEL = curView._id2el[result.parentUuid];
+                    if (parentEL) {
+                        parentEL.folded = false;
+                    }
+                });
+            });
+        },
 
-        filterResults.forEach(function ( result ) {
-            self.$.tree.moveItemById( result.uuid,
-                                      result.parentUuid,
-                                      Path.basenameNoExt(result.destPath) );
+        'asset-db:assets-moved': function ( results ) {
+            var filterResults = Editor.Utils.arrayCmpFilter ( results, function ( a, b ) {
+                if ( Path.contains( a.srcPath, b.srcPath ) ) {
+                    return 1;
+                }
+                if ( Path.contains( b.srcPath, a.srcPath ) ) {
+                    return -1;
+                }
+                return 0;
+            });
+            var self = this;
 
-            if (!self.$.searchResult.hidden) {
-                self.$.searchResult.moveItemById( result.uuid,
+            filterResults.forEach(function ( result ) {
+                self.$.tree.moveItemById( result.uuid,
                                           result.parentUuid,
                                           Path.basenameNoExt(result.destPath) );
-            }
-        });
 
-        // flash moved
-        filterResults.forEach(function ( result ) {
-            requestAnimationFrame( function () {
-                var itemEL = self.curView()._id2el[result.uuid];
-                itemEL.hint();
+                if (!self.$.searchResult.hidden) {
+                    self.$.searchResult.moveItemById( result.uuid,
+                                              result.parentUuid,
+                                              Path.basenameNoExt(result.destPath) );
+                }
             });
-        });
-    },
 
-    'asset-db:assets-deleted': function ( results ) {
-        var filterResults = Editor.Utils.arrayCmpFilter ( results, function ( a, b ) {
-            if ( Path.contains( a.path, b.path ) ) {
-                return 1;
-            }
-            if ( Path.contains( b.path, a.path ) ) {
-                return -1;
-            }
-            return 0;
-        });
+            // flash moved
+            filterResults.forEach(function ( result ) {
+                window.requestAnimationFrame( function () {
+                    var itemEL = self.curView()._id2el[result.uuid];
+                    itemEL.hint();
+                });
+            });
+        },
 
-        results.forEach( function ( result ) {
-            this.$.tree.removeItemById( result.uuid );
-            if (!this.$.searchResult.hidden) {
-                this.$.searchResult.removeItemById( result.uuid );
-            }
-        }.bind(this) );
+        'asset-db:assets-deleted': function ( results ) {
+            // var filterResults = Editor.Utils.arrayCmpFilter ( results, function ( a, b ) {
+            //     if ( Path.contains( a.path, b.path ) ) {
+            //         return 1;
+            //     }
+            //     if ( Path.contains( b.path, a.path ) ) {
+            //         return -1;
+            //     }
+            //     return 0;
+            // });
 
-        var uuids = results.map( function ( result ) {
-            return result.uuid;
-        });
-        Editor.Selection.unselect('asset', uuids, true);
-    },
+            results.forEach( function ( result ) {
+                this.$.tree.removeItemById( result.uuid );
+                if (!this.$.searchResult.hidden) {
+                    this.$.searchResult.removeItemById( result.uuid );
+                }
+            }.bind(this) );
 
-    'asset-db:asset-changed': function ( result ) {
-        var itemEL = this.curView()._id2el[result.uuid];
-        itemEL.hint();
-    },
+            var uuids = results.map( function ( result ) {
+                return result.uuid;
+            });
+            Editor.Selection.unselect('asset', uuids, true);
+        },
 
-    'asset-db:asset-uuid-changed': function ( result ) {
-        var itemEL = this.curView()._id2el[result.oldUuid];
-        this.curView().updateItemID(itemEL, result.uuid);
-        itemEL.hint();
-    },
+        'asset-db:asset-changed': function ( result ) {
+            var itemEL = this.curView()._id2el[result.uuid];
+            itemEL.hint();
+        },
 
-    'assets:hint': function ( uuid ) {
-        this.curView().hintItemById(uuid);
-    },
+        'asset-db:asset-uuid-changed': function ( result ) {
+            var itemEL = this.curView()._id2el[result.oldUuid];
+            this.curView().updateItemID(itemEL, result.uuid);
+            itemEL.hint();
+        },
 
-    'assets:new-asset': function ( info, isContextMenu ) {
-        // get parent url
-        var url, el, parentUrl;
-        if ( isContextMenu ) {
-            var contextUuids = Editor.Selection.contexts('asset');
-            if ( contextUuids.length > 0 ) {
-                var contextUuid = contextUuids[0];
-                el = this.curView()._id2el[contextUuid];
-                if ( el.assetType === 'folder' || el.assetType === 'mount' ) {
+        'assets:hint': function ( uuid ) {
+            this.curView().hintItemById(uuid);
+        },
+
+        'assets:new-asset': function ( info, isContextMenu ) {
+            // get parent url
+            var url, el, parentUrl;
+            if ( isContextMenu ) {
+                var contextUuids = Editor.Selection.contexts('asset');
+                if ( contextUuids.length > 0 ) {
+                    var contextUuid = contextUuids[0];
+                    el = this.curView()._id2el[contextUuid];
+                    if ( el.assetType === 'folder' || el.assetType === 'mount' ) {
+                        parentUrl = this.curView().getUrl(el);
+                    }
+                    else {
+                        url = this.curView().getUrl(el);
+                        parentUrl = Path.dirname(url);
+                    }
+                } else {
+                    el = Polymer.dom(this.curView()).firstElementChild;
                     parentUrl = this.curView().getUrl(el);
                 }
-                else {
+            } else {
+                var uuid = Editor.Selection.curActivate('asset');
+                if ( uuid ) {
+                    el = this.curView()._id2el[uuid];
                     url = this.curView().getUrl(el);
-                    parentUrl = Path.dirname(url);
+
+                    // if this is not root
+                    if ( Polymer.dom(el).parentNode !== this.curView() ) {
+                        parentUrl = Path.dirname(url);
+                    }
+                    else {
+                        parentUrl = url;
+                    }
+                } else {
+                    el = Polymer.dom(this.curView()).firstElementChild;
+                    parentUrl = this.curView().getUrl(el);
                 }
-            } else {
-                el = Polymer.dom(this.curView()).firstElementChild;
-                parentUrl = this.curView().getUrl(el);
             }
-        } else {
-            var uuid = Editor.Selection.curActivate('asset');
-            if ( uuid ) {
-                el = this.curView()._id2el[uuid];
-                url = this.curView().getUrl(el);
 
-                // if this is not root
-                if ( Polymer.dom(el).parentNode !== this.curView() ) {
-                    parentUrl = Path.dirname(url);
+            //
+            var data = info.data;
+            if ( info.url ) {
+                data = Fs.readFileSync(Editor.url(info.url), {encoding:'utf8'});
+            }
+
+            var assetUrl = Url.join(parentUrl, info.name);
+            this._activeWhenCreated = assetUrl;
+            Editor.assetdb.create( assetUrl, data );
+        },
+
+        'assets:rename': function ( uuid ) {
+            var el = this.curView()._id2el[uuid];
+            if ( el ) {
+                this.curView().rename(el);
+            }
+        },
+
+        'assets:delete': function ( uuids ) {
+            var urls = uuids.map(function (id) {
+                var el = this.curView()._id2el[id];
+                return this.curView().getUrl(el);
+            }.bind(this));
+            Editor.assetdb.delete(urls);
+        },
+
+        _onAssetsTreeReady: function () {
+            var localProfile = this.profiles.local;
+            this.$.tree.restoreItemStates(localProfile['item-states']);
+        },
+
+        _onOpenAsset: function ( event ) {
+            var uuid = event.detail.uuid;
+            Editor.assetdb.queryInfoByUuid( uuid, function ( info ) {
+                var assetType = info.type;
+                if ( assetType === 'javascript' || assetType === 'coffeescript' ) {
+                    Editor.sendToCore('code-editor:open-by-uuid', uuid);
                 }
-                else {
-                    parentUrl = url;
+                else if ( assetType === 'scene' ) {
+                    Editor.sendToCore('scene:open-by-uuid', uuid);
                 }
-            } else {
-                el = Polymer.dom(this.curView()).firstElementChild;
-                parentUrl = this.curView().getUrl(el);
-            }
-        }
+            }.bind(this));
+        },
 
-        //
-        var data = info.data;
-        if ( info.url ) {
-            data = Fs.readFileSync(Editor.url(info.url), {encoding:'utf8'});
-        }
+        _onRefresh: function ( event ) {
+            event.stopPropagation();
+            this.$.tree.refresh();
+        },
 
-        var assetUrl = Url.join(parentUrl, info.name);
-        this._activeWhenCreated = assetUrl;
-        Editor.assetdb.create( assetUrl, data );
-    },
+        _onCreateClick: function ( event ) {
+            var rect = this.$.createBtn.getBoundingClientRect();
+            Editor.sendToCore('assets:popup-create-menu', rect.left, rect.bottom + 5, Editor.requireIpcEvent);
+        },
 
-    'assets:rename': function ( uuid ) {
-        var el = this.curView()._id2el[uuid];
-        if ( el ) {
-            this.curView().rename(el);
-        }
-    },
+        _onFilterTextChanged: function () {
+            this.$.searchResult.filter(this.filterText);
 
-    'assets:delete': function ( uuids ) {
-        var urls = uuids.map(function (id) {
-            var el = this.curView()._id2el[id];
-            return this.curView().getUrl(el);
-        }.bind(this));
-        Editor.assetdb.delete(urls);
-    },
-
-    _onAssetsTreeReady: function () {
-        var localProfile = this.profiles.local;
-        this.$.tree.restoreItemStates(localProfile['item-states']);
-    },
-
-    _onOpenAsset: function ( event ) {
-        var uuid = event.detail.uuid;
-        Editor.assetdb.queryInfoByUuid( uuid, function ( info ) {
-            var assetType = info.type;
-            if ( assetType === 'javascript' || assetType === 'coffeescript' ) {
-                Editor.sendToCore('code-editor:open-by-uuid', uuid);
-            }
-            else if ( assetType === 'scene' ) {
-                Editor.sendToCore('scene:open-by-uuid', uuid);
-            }
-        }.bind(this));
-    },
-
-    _onRefresh: function ( event ) {
-        event.stopPropagation();
-        this.$.tree.refresh();
-    },
-
-    _onCreateClick: function ( event ) {
-        var rect = this.$.createBtn.getBoundingClientRect();
-        Editor.sendToCore('assets:popup-create-menu', rect.left, rect.bottom + 5, Editor.requireIpcEvent);
-    },
-
-    _onFilterTextChanged: function () {
-        this.$.searchResult.filter(this.filterText);
-
-        if (this.filterText) {
-            this.$.searchResult.hidden = false;
-            this.$.locate.hidden = false;
-            this.$.tree.hidden = true;
-            return;
-        }
-
-        this.$.searchResult.hidden = true;
-        this.$.locate.hidden = true;
-        this.$.searchResult.clear();
-        this.$.tree.hidden = false;
-    },
-
-    _onLocateClick: function (event) {
-        event.stopPropagation();
-
-        var ids = Editor.Selection.curSelection('asset');
-        var locateItem = false;
-        ids.forEach( function (item) {
-            if (this.$.searchResult._id2el[item]) {
-                locateItem = true;
+            if (this.filterText) {
+                this.$.searchResult.hidden = false;
+                this.$.locate.hidden = false;
+                this.$.tree.hidden = true;
                 return;
             }
-            locateItem = false;
-        }.bind(this));
 
-        if (!locateItem) {
-            return;
-        }
-        this.filterText = '';
-        this.$.tree.hintItemById(ids[0]);
-        for (var i = 1; i < ids.length; ++i) {
-            this.$.tree._id2el[ids[i]].hint();
-        }
-    },
+            this.$.searchResult.hidden = true;
+            this.$.locate.hidden = true;
+            this.$.searchResult.clear();
+            this.$.tree.hidden = false;
+        },
 
-    curView: function () {
-        if (!this.$.searchResult.hidden) {
-            return this.$.searchResult;
-        }
-        return this.$.tree;
-    },
+        _onLocateClick: function (event) {
+            event.stopPropagation();
 
-    _onSearchConfirm: function ( event ) {
-        if ( event.detail.confirmByEnter ) {
-            this.async( function () {
-                if ( !this.$.searchResult.hidden ) {
-                    this.$.searchResult.setFocus();
+            var ids = Editor.Selection.curSelection('asset');
+            var locateItem = false;
+            ids.forEach( function (item) {
+                if (this.$.searchResult._id2el[item]) {
+                    locateItem = true;
                     return;
                 }
+                locateItem = false;
+            }.bind(this));
 
-                this.$.tree.setFocus();
-            });
-        }
-    },
-});
+            if (!locateItem) {
+                return;
+            }
+            this.filterText = '';
+            this.$.tree.hintItemById(ids[0]);
+            for (var i = 1; i < ids.length; ++i) {
+                this.$.tree._id2el[ids[i]].hint();
+            }
+        },
+
+        curView: function () {
+            if (!this.$.searchResult.hidden) {
+                return this.$.searchResult;
+            }
+            return this.$.tree;
+        },
+
+        _onSearchConfirm: function ( event ) {
+            if ( event.detail.confirmByEnter ) {
+                this.async( function () {
+                    if ( !this.$.searchResult.hidden ) {
+                        this.$.searchResult.setFocus();
+                        return;
+                    }
+
+                    this.$.tree.setFocus();
+                });
+            }
+        },
+    });
 
 })();
