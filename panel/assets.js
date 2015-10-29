@@ -27,14 +27,16 @@
         ready: function () {
             this._activeWhenCreated = null;
 
-            window.addEventListener( 'beforeunload', function ( event ) {
+            window.addEventListener( 'beforeunload', () => {
                 var states = this.$.tree.dumpItemStates();
                 this.profiles.local['item-states'] = states;
                 this.profiles.local.save();
 
                 // NOTE: this will prevent window reload
                 // event.returnValue = false;
-            }.bind(this) );
+            });
+
+            this.$.tree.refresh();
         },
 
         focusOnSearch: function ( event ) {
@@ -412,7 +414,7 @@
             this.$.tree.refresh();
         },
 
-        _onCreateClick: function ( event ) {
+        _onCreateClick: function () {
             var rect = this.$.createBtn.getBoundingClientRect();
             Editor.sendToCore('assets:popup-create-menu', rect.left, rect.bottom + 5, Editor.requireIpcEvent);
         },

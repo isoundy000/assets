@@ -61,8 +61,6 @@ Editor.registerElement({
 
         this._initFocusable(this);
         this._initDroppable(this);
-
-        this.refresh();
     },
 
     refresh: function () {
