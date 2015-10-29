@@ -118,7 +118,7 @@
             var url;
 
             if ( type === 'texture' ) {
-                url = 'thumbnail://' + this._userId;
+                url = `thumbnail://${this._userId}?32`;
                 this.$.icon.style.backgroundImage = 'url("' + url + '")';
                 return;
             }
