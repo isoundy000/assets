@@ -24,7 +24,7 @@
             'open-asset': '_onOpenAsset',
         },
 
-        ready: function () {
+        'panel-ready': function () {
             this._activeWhenCreated = null;
 
             window.addEventListener( 'beforeunload', () => {
