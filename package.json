@@ -21,7 +21,7 @@
   },
   "panels": {
     "panel": {
-      "frame": "panel/assets.html",
+      "frame": "panel/panel.html",
       "type": "dockable",
       "title": "Assets",
       "icon": "panel/icon.png",

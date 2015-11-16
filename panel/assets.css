@@ -1,9 +1,0 @@
-:host {
-    @apply(--layout-vertical);
-}
-
-.path {
-    font-weight: bold;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}

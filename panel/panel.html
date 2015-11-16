@@ -1,0 +1,48 @@
+<link rel="import" href="packages://ui-kit/widget/index.html">
+<link rel="import" href="assets-tree.html">
+
+<dom-module id="editor-assets">
+  <template>
+    <style>
+      :host {
+        @apply(--layout-vertical);
+      }
+
+      .path {
+        font-weight: bold;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    </style>
+
+    <editor-toolbar>
+      <editor-button id="createBtn" on-click="_onCreateClick">
+        <i class="fa fa-plus"></i>
+      </editor-button>
+      <editor-input
+        id="search"
+        class="flex-1"
+        input-value="{{searchPattern}}"
+        placeholder="Search..."
+        on-confirm="_onSearchConfirm"
+      >
+      </editor-input>
+      <editor-button id="locate" hidden on-click="_onLocateClick">
+        <i class="fa fa-map-marker"></i>
+      </editor-button>
+    </editor-toolbar>
+
+    <assets-tree id="tree" class="flex-1" droppable="file,asset,node"></assets-tree>
+
+    <assets-tree id="searchResult" class="flex-1" droppable="" hidden></assets-tree>
+
+    <editor-toolbar>
+      <span class="path flex-1">{{activeItemUrl}}</span>
+      <editor-button on-click="_onRefresh">
+        <i class="fa fa-refresh"></i>
+      </editor-button>
+    </editor-toolbar>
+  </template>
+
+  <script type="text/javascript" src="panel.js"></script>
+</dom-module>
