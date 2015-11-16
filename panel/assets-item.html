@@ -1,25 +1,52 @@
 <dom-module id="assets-item">
-    <link rel="import" type="css" href="packages://ui-tree/widget/tree-item.css">
-    <link rel="import" type="css" href="assets-item.css">
+  <link rel="import" type="css" href="packages://ui-tree/widget/tree-item.css">
 
-    <template>
-        <div id="bar"></div>
-        <div id="header">
-            <div class="wrapper">
-                <i id="foldIcon" class$="{{_foldIconClass(folded)}}"
-                   on-mousedown="_onFoldMouseDown"
-                   on-click="_onFoldClick"
-                   on-dblclick="_onFoldDblClick"
-                   >
-                </i>
-                <div id="icon" draggable="false"></div>
-                <span id="name" class$="{{_nameClass(name)}}">{{_nameText(name)}}</span>
-            </div>
-        </div>
-        <div id="content">
-            <content></content>
-        </div>
-    </template>
+  <template>
+    <style>
+      :host[conflicted] > #bar {
+        background-color: #cc0;
+      }
 
-    <script type="text/javascript" src="assets-item.js"></script>
+      :host[conflicted] > #header > .wrapper {
+        color: black;
+      }
+
+      :host[highlighted] > #header {
+        background-color: #c7722c;
+      }
+
+      :host[highlighted] > #header > .wrapper {
+        color: black;
+        font-weight: bold;
+      }
+
+      :host[invalid] > #header {
+        background-color: #f00;
+      }
+
+      :host[invalid] > #header > .wrapper {
+        color: black;
+        font-weight: bold;
+      }
+    </style>
+
+    <div id="bar"></div>
+    <div id="header">
+      <div class="wrapper">
+        <i id="foldIcon" class$="{{_foldIconClass(folded)}}"
+           on-mousedown="_onFoldMouseDown"
+           on-click="_onFoldClick"
+           on-dblclick="_onFoldDblClick"
+           >
+        </i>
+        <div id="icon" draggable="false"></div>
+        <span id="name" class$="{{_nameClass(name)}}">{{_nameText(name)}}</span>
+      </div>
+    </div>
+    <div id="content">
+      <content></content>
+    </div>
+  </template>
+
+  <script type="text/javascript" src="assets-item.js"></script>
 </dom-module>

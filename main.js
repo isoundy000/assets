@@ -1,36 +1,38 @@
-var BrowserWindow = require('browser-window');
-var Menu = require('./core/menu');
+'use strict';
+
+const BrowserWindow = require('browser-window');
+const Menu = require('./core/menu');
 
 module.exports = {
-    load: function () {
-    },
+  load () {
+  },
 
-    unload: function () {
-    },
+  unload () {
+  },
 
-    'assets:open': function () {
-        Editor.Panel.open('assets.panel');
-    },
+  'assets:open' () {
+    Editor.Panel.open('assets.panel');
+  },
 
-    'assets:popup-create-menu': function (event, x, y) {
-        var template = Menu.getCreateTemplate();
-        var editorMenu = new Editor.Menu(template, event.sender);
-        // TODO: editorMenu.add( '', Editor.menus['create-asset'] );
+  'assets:popup-create-menu' (event, x, y) {
+    var template = Menu.getCreateTemplate();
+    var editorMenu = new Editor.Menu(template, event.sender);
+    // TODO: editorMenu.add( '', Editor.menus['create-asset'] );
 
-        x = Math.floor(x);
-        y = Math.floor(y);
-        editorMenu.nativeMenu.popup(BrowserWindow.fromWebContents(event.sender), x, y);
-        editorMenu.dispose();
-    },
+    x = Math.floor(x);
+    y = Math.floor(y);
+    editorMenu.nativeMenu.popup(BrowserWindow.fromWebContents(event.sender), x, y);
+    editorMenu.dispose();
+  },
 
-    'assets:popup-context-menu': function (event, x, y) {
-        var template = Menu.getContextTemplate();
-        var editorMenu = new Editor.Menu(template, event.sender);
-        // TODO: editorMenu.add( '', Editor.menus['create-asset'] );
+  'assets:popup-context-menu' (event, x, y) {
+    var template = Menu.getContextTemplate();
+    var editorMenu = new Editor.Menu(template, event.sender);
+    // TODO: editorMenu.add( '', Editor.menus['create-asset'] );
 
-        x = Math.floor(x);
-        y = Math.floor(y);
-        editorMenu.nativeMenu.popup(BrowserWindow.fromWebContents(event.sender), x, y);
-        editorMenu.dispose();
-    },
+    x = Math.floor(x);
+    y = Math.floor(y);
+    editorMenu.nativeMenu.popup(BrowserWindow.fromWebContents(event.sender), x, y);
+    editorMenu.dispose();
+  },
 };

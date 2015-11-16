@@ -1,27 +1,85 @@
 <link rel="import" href="assets-item.html">
 
 <dom-module id="assets-tree">
-    <link rel="import" type="css" href="assets-tree.css">
+  <template>
+    <style>
+      :host {
+        display: block;
+        box-sizing: border-box;
 
-    <template>
-        <div id="content" class="fit" on-scroll="_onScroll">
-            <content></content>
-            <div id="highlightBorder" class="highlight"></div>
-            <div id="insertLine" class="insert"></div>
-            <editor-input id="nameInput" hidden
-                on-mousedown="_onRenameMouseDown"
-                on-keydown="_onRenameKeyDown"
-                on-value-changed="_onRenameValueChanged"
-                on-focused-changed="_onRenameFocusChanged"
-            ></editor-input>
-        </div>
-        <editor-loader id="loader" hidden
-            text="Loading"
-            mask
-        >
-        </editor-loader>
-    </template>
+        position: relative;
 
-    <script type="text/javascript" src="packages://ui-tree/widget/id-tree.js"></script>
-    <script type="text/javascript" src="assets-tree.js"></script>
+        min-width: 100px;
+        min-height: 100px;
+      }
+
+      #content {
+        padding: 1px 5px;
+        border: 1px solid #171717;
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        box-shadow: inset 0 0 8px 2px rgba(0,0,0,0.2);
+        background: #333;
+      }
+
+      .highlight {
+        display: none;
+
+        position: absolute;
+        border: 2px solid #c7722c;
+        box-sizing: border-box;
+
+        pointer-events: none;
+      }
+
+      .highlight[invalid] {
+        border: 2px solid #f00;
+      }
+
+      .insert {
+        display: none;
+
+        position: absolute;
+        border: 1px solid #0f0;
+        box-sizing: border-box;
+
+        pointer-events: none;
+      }
+
+      #nameInput {
+        position: absolute;
+        height: 18px;
+        /* width: calc(100% - 11px); */
+      }
+
+      :host ::content assets-item > #content > assets-item {
+        margin-left: 18px;
+      }
+
+      :host[focused] ::content assets-item[selected] > #bar {
+        background-color: #059;
+      }
+    </style>
+
+    <div id="content" class="fit" on-scroll="_onScroll">
+      <content></content>
+      <div id="highlightBorder" class="highlight"></div>
+      <div id="insertLine" class="insert"></div>
+      <editor-input id="nameInput" hidden
+        on-mousedown="_onRenameMouseDown"
+        on-keydown="_onRenameKeyDown"
+        on-value-changed="_onRenameValueChanged"
+        on-focused-changed="_onRenameFocusChanged"
+      ></editor-input>
+    </div>
+    <editor-loader id="loader" hidden
+      text="Loading"
+      mask
+    >
+    </editor-loader>
+  </template>
+
+  <script type="text/javascript" src="packages://ui-tree/widget/id-tree.js"></script>
+  <script type="text/javascript" src="assets-tree.js"></script>
 </dom-module>
