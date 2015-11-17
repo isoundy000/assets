@@ -257,6 +257,12 @@
           }
         });
       });
+
+      if ( hintResults.length ) {
+        let firstResult = hintResults[0];
+        let itemEL = curView._id2el[firstResult.uuid];
+        curView.scrollToItem(itemEL);
+      }
     },
 
     'asset-db:assets-moved' ( results ) {
