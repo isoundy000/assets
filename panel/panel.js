@@ -276,7 +276,7 @@
         return 0;
       });
 
-      filterResults.forEach(function ( result ) {
+      filterResults.forEach(result => {
         this.$.tree.moveItemById(
           result.uuid,
           result.parentUuid,
