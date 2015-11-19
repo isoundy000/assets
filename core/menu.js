@@ -59,7 +59,7 @@ function getContextTemplate () {
         let contextUuids = Editor.Selection.contexts('asset');
         if ( contextUuids.length > 0 ) {
           let uuid = contextUuids[0];
-          let meta = Editor.assetdb.loadMeta(uuid);
+          let meta = Editor.assetdb.loadMetaByUuid(uuid);
 
           if ( meta.useRawfile() ) {
             Editor.info( 'This is a raw asset, it does not exists in library' );
