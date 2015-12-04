@@ -97,7 +97,7 @@
 
       let id = this.async(() => {
         this.hideLoader();
-        Editor.assetdb.queryAssets('assets://**/*', null, results => {
+        Editor.assetdb.queryAssets('db://assets/**/*', null, results => {
           this.clear();
           if (id !== this._asyncID) {
             return;
@@ -223,21 +223,14 @@
     },
 
     getUrl ( element ) {
-      if (element.assetType === 'mount') {
-        return element.name + '://';
-      }
-
       let url = element.name + element.extname;
       let parentEL = Polymer.dom(element).parentNode;
       while (parentEL.tagName === 'ASSETS-ITEM' ) {
-        if (parentEL.assetType === 'mount') {
-          url = parentEL.name + '://' + url;
-          break;
-        } else {
-          url = Url.join(parentEL.name + parentEL.extname, url);
-          parentEL = Polymer.dom(parentEL).parentNode;
-        }
+        url = Url.join(parentEL.name + parentEL.extname, url);
+        parentEL = Polymer.dom(parentEL).parentNode;
       }
+
+      url = 'db://' + url;
       return url;
     },
 
@@ -286,36 +279,29 @@
     _build ( data ) {
       console.time('assets-tree._build()');
       data.forEach(entry => {
-        let newEL = this._newEntryRecursively(entry);
-        this.addItem( this, newEL, {
+        let parentEL;
+        if ( entry.parentUuid ) {
+          parentEL = this._id2el[entry.parentUuid];
+        } else {
+          parentEL = this;
+        }
+
+        if ( !parentEL ) {
+          console.warn(`Failed to add item ${entry.name}, parent not found.`);
+          return;
+        }
+
+        let newEL = document.createElement('assets-item');
+        this.addItem(parentEL, newEL, {
           id: entry.uuid,
           name: entry.name,
-          folded: false,
+          folded: entry.type === 'mount' ? false : true,
           assetType: entry.type,
           extname: entry.extname
         });
         newEL.setIcon( entry.type );
       });
       console.timeEnd('assets-tree._build()');
-    },
-
-    _newEntryRecursively ( entry ) {
-      let el = document.createElement('assets-item');
-
-      if ( entry.children ) {
-        entry.children.forEach(childEntry => {
-          let childEL = this._newEntryRecursively(childEntry);
-          this.addItem(el, childEL, {
-            id: childEntry.uuid,
-            name: childEntry.name,
-          });
-          childEL.assetType = childEntry.type;
-          childEL.extname = childEntry.extname;
-          childEL.setIcon( childEntry.type );
-        });
-      }
-
-      return el;
     },
 
     _getShiftSelects ( targetEL ) {
