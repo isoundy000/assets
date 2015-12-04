@@ -2,6 +2,8 @@
 
 Editor.require('app://editor/test-utils/renderer/init');
 
+const AssetsUtils = Editor.require('packages://assets/test/utils');
+
 let dbData = {
   uuid: 'assets',
   name: 'assets',
@@ -41,7 +43,7 @@ describe('<editor-assets>', function() {
   Helper.runPanel( 'assets.panel' );
 
   let deepQuery = sinon.stub( Editor.assetdb, 'deepQuery' );
-  deepQuery.yields([dbData]);
+  deepQuery.yields( AssetsUtils.dump(dbData) );
 
   it('should load asset when ready', function( done ) {
     let targetEL = Helper.targetEL;

@@ -1,48 +1,63 @@
 'use strict';
 
-const Uuid = require('node-uuid');
-
 Editor.require('app://editor/test-utils/renderer/init');
 
-let dbData = {
-  uuid: 'assets',
-  name: 'assets',
-  extname: '',
-  type: 'mount',
+const AssetsUtils = Editor.require('packages://assets/test/utils');
 
-  children: [
-    {
-      uuid: Uuid.v4(),
-      name: 'a folder',
-      extname: '',
-      type: 'folder',
-      children: [
-        {
-          uuid: Uuid.v4(),
-          name: 'foo',
-          extname: '.asset',
-          type: 'asset',
-        },
-        {
-          uuid: Uuid.v4(),
-          name: 'bar',
-          extname: '.asset',
-          type: 'asset',
-        },
-      ]
-    },
-    {
-      uuid: Uuid.v4(),
-      name: 'foo-bar',
-      extname: '.asset',
-      type: 'asset',
-    },
-  ],
-};
+let dbData = [
+  // =======
+  {
+    name: 'assets',
+    extname: '',
+    type: 'mount',
+    uuid: 'mount-assets',
+
+    children: [
+      {
+        name: 'a folder',
+        extname: '',
+        type: 'folder',
+
+        children: [
+          {
+            name: 'foo',
+            extname: '.asset',
+            type: 'asset',
+          },
+          {
+            name: 'bar',
+            extname: '.asset',
+            type: 'asset',
+          },
+        ]
+      },
+      {
+        name: 'foo-bar',
+        extname: '.asset',
+        type: 'asset',
+      },
+    ],
+  },
+
+  // =======
+  {
+    name: 'packages',
+    extname: '',
+    type: 'mount',
+    uuid: 'mount-packages',
+    children: [
+      {
+        name: 'foo-bar',
+        extname: '.asset',
+        type: 'asset',
+      },
+    ],
+  },
+];
 
 // stub functions
 let deepQuery = sinon.stub( Editor.assetdb, 'deepQuery' );
-deepQuery.yields([dbData]);
+deepQuery.yields( AssetsUtils.dump(dbData) );
 
 //
 describe('<editor-assets>', function() {
