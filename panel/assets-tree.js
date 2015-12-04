@@ -97,7 +97,7 @@
 
       let id = this.async(() => {
         this.hideLoader();
-        Editor.assetdb.queryAssets('assets://**/*', null, results => {
+        Editor.assetdb.queryAssets('db://assets/**/*', null, results => {
           this.clear();
           if (id !== this._asyncID) {
             return;
@@ -223,21 +223,14 @@
     },
 
     getUrl ( element ) {
-      if (element.assetType === 'mount') {
-        return element.name + '://';
-      }
-
       let url = element.name + element.extname;
       let parentEL = Polymer.dom(element).parentNode;
       while (parentEL.tagName === 'ASSETS-ITEM' ) {
-        if (parentEL.assetType === 'mount') {
-          url = parentEL.name + '://' + url;
-          break;
-        } else {
-          url = Url.join(parentEL.name + parentEL.extname, url);
-          parentEL = Polymer.dom(parentEL).parentNode;
-        }
+        url = Url.join(parentEL.name + parentEL.extname, url);
+        parentEL = Polymer.dom(parentEL).parentNode;
       }
+
+      url = 'db://' + url;
       return url;
     },
 
