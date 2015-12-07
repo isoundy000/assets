@@ -129,7 +129,7 @@ function getContextTemplate () {
 }
 
 function getCreateTemplate ( isContextMenu ) {
-  let menuTmpl = Editor.menus['create-asset'];
+  let menuTmpl = Editor.Menu.getMenu('create-asset');
 
   // NOTE: this will prevent menu item pollution
   if ( menuTmpl ) {

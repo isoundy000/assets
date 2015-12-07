@@ -17,7 +17,7 @@ module.exports = {
   'assets:popup-create-menu' (event, x, y) {
     var template = Menu.getCreateTemplate();
     var editorMenu = new Editor.Menu(template, event.sender);
-    // TODO: editorMenu.add( '', Editor.menus['create-asset'] );
+    // TODO: editorMenu.add( '', Editor.Menu.getMenu('create-asset') );
 
     x = Math.floor(x);
     y = Math.floor(y);
@@ -28,7 +28,7 @@ module.exports = {
   'assets:popup-context-menu' (event, x, y) {
     var template = Menu.getContextTemplate();
     var editorMenu = new Editor.Menu(template, event.sender);
-    // TODO: editorMenu.add( '', Editor.menus['create-asset'] );
+    // TODO: editorMenu.add( '', Editor.Menu.getMenu('create-asset') );
 
     x = Math.floor(x);
     y = Math.floor(y);
