@@ -163,63 +163,75 @@
     },
 
     selectPrev ( shiftSelect ) {
-      if ( this._activeElement ) {
-        let prev = this.prevItem(this._activeElement);
-        if ( prev ) {
-          if (prev !== this._activeElement) {
-            if ( shiftSelect ) {
-              if (this._shiftStartElement === null) {
-                this._shiftStartElement = this._activeElement;
-              }
-
-              let userIds = this._getShiftSelects(prev);
-              Editor.Selection.select( 'asset', userIds, true, true );
-            } else {
-              this._shiftStartElement = null;
-              Editor.Selection.select( 'asset', prev._userId, true, true );
-            }
-
-            this.activeItem(prev);
-
-            window.requestAnimationFrame(() => {
-              if ( prev.offsetTop <= this.$.content.scrollTop ) {
-                this.$.content.scrollTop = prev.offsetTop - 2; // 1 for padding, 1 for border
-              }
-            });
-          }
-        }
+      if ( !this._activeElement ) {
+        return;
       }
+
+      let prev = this.prevItem(this._activeElement);
+      if ( !prev ) {
+        return;
+      }
+
+      if (prev === this._activeElement) {
+        return;
+      }
+
+      if ( shiftSelect ) {
+        if (this._shiftStartElement === null) {
+          this._shiftStartElement = this._activeElement;
+        }
+
+        let userIds = this._getShiftSelects(prev);
+        Editor.Selection.select( 'asset', userIds, true, true );
+      } else {
+        this._shiftStartElement = null;
+        Editor.Selection.select( 'asset', prev._userId, true, true );
+      }
+
+      this.activeItem(prev);
+
+      window.requestAnimationFrame(() => {
+        if ( prev.offsetTop <= this.$.content.scrollTop ) {
+          this.$.content.scrollTop = prev.offsetTop - 2; // 1 for padding, 1 for border
+        }
+      });
     },
 
     selectNext ( shiftSelect ) {
-      if ( this._activeElement ) {
-        let next = this.nextItem(this._activeElement, false);
-        if ( next ) {
-          if ( next !== this._activeElement ) {
-            if ( shiftSelect ) {
-              if (this._shiftStartElement === null) {
-                this._shiftStartElement = this._activeElement;
-              }
-
-              let userIds = this._getShiftSelects(next);
-              Editor.Selection.select( 'asset', userIds, true, true );
-            } else {
-              this._shiftStartElement = null;
-              Editor.Selection.select( 'asset', next._userId, true, true );
-            }
-
-            this.activeItem(next);
-
-            window.requestAnimationFrame(() => {
-              let headerHeight = next.$.header.offsetHeight;
-              let contentHeight = this.offsetHeight - 3; // 2 for border, 1 for padding
-              if ( next.offsetTop + headerHeight >= this.$.content.scrollTop + contentHeight ) {
-                this.$.content.scrollTop = next.offsetTop + headerHeight - contentHeight;
-              }
-            });
-          }
-        }
+      if ( !this._activeElement ) {
+        return;
       }
+
+      let next = this.nextItem(this._activeElement, false);
+      if ( !next ) {
+        return;
+      }
+
+      if ( next === this._activeElement ) {
+        return;
+      }
+
+      if ( shiftSelect ) {
+        if (this._shiftStartElement === null) {
+          this._shiftStartElement = this._activeElement;
+        }
+
+        let userIds = this._getShiftSelects(next);
+        Editor.Selection.select( 'asset', userIds, true, true );
+      } else {
+        this._shiftStartElement = null;
+        Editor.Selection.select( 'asset', next._userId, true, true );
+      }
+
+      this.activeItem(next);
+
+      window.requestAnimationFrame(() => {
+        let headerHeight = next.$.header.offsetHeight;
+        let contentHeight = this.offsetHeight - 3; // 2 for border, 1 for padding
+        if ( next.offsetTop + headerHeight >= this.$.content.scrollTop + contentHeight ) {
+          this.$.content.scrollTop = next.offsetTop + headerHeight - contentHeight;
+        }
+      });
     },
 
     getUrl ( element ) {
