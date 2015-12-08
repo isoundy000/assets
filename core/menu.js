@@ -130,7 +130,7 @@ function getContextTemplate () {
 
 function getCreateTemplate ( isContextMenu ) {
   let menuTmpl = Editor.Menu.getMenu('create-asset');
-  Editor.Menu.walk( item => {
+  Editor.Menu.walk( menuTmpl, item => {
     if ( item.params ) {
       item.params.push(isContextMenu);
     }
