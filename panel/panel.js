@@ -22,6 +22,8 @@
     listeners: {
       'assets-tree-ready': '_onAssetsTreeReady',
       'open-asset': '_onOpenAsset',
+      'start-loading': '_onStartLoading',
+      'finish-loading': '_onFinishLoading',
     },
 
     'panel-ready' () {
@@ -404,6 +406,27 @@
       Editor.assetdb.delete(urls);
     },
 
+    _onStartLoading ( event ) {
+      if (this.$.loader.hidden === false) {
+        return;
+      }
+
+      if (this._loaderID) {
+        return;
+      }
+
+      this._loaderID = this.async(() => {
+        this.$.loader.hidden = false;
+        this._loaderID = null;
+      }, event.detail);
+    },
+
+    _onFinishLoading () {
+      this.cancelAsync(this._loaderID);
+      this._loaderID = null;
+      this.$.loader.hidden = true;
+    },
+
     _onAssetsTreeReady () {
       let localProfile = this.profiles.local;
       this.$.tree.restoreItemStates(localProfile['item-states']);
@@ -449,7 +472,6 @@
     },
 
     _onSearchPatternChanged () {
-      // TODO
       this.$.searchResult.search(this.searchPattern);
 
       if (this.searchPattern) {

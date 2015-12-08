@@ -52,32 +52,13 @@
       this._initDroppable(this);
     },
 
-    showLoaderAfter: function(timeout) {
-      if (this.$.loader.hidden === false)
-        return;
-
-      if (this._loaderID)
-        return;
-
-      this._loaderID = this.async(function() {
-        this.$.loader.hidden = false;
-        this._loaderID = null;
-      }, timeout);
-    },
-
-    hideLoader: function() {
-      this.cancelAsync(this._loaderID);
-      this._loaderID = null;
-      this.$.loader.hidden = true;
-    },
-
     refresh () {
       this.clear();
 
-      this.showLoaderAfter(1);
+      this.fire('start-loading',1);
       Editor.assetdb.deepQuery(results => {
         this._build(results);
-        this.hideLoader();
+        this.fire('finish-loading');
         this.fire('assets-tree-ready');
       });
     },
@@ -93,10 +74,9 @@
       this.cancelAsync(this._asyncID);
       this._asyncID = null;
 
-      this.showLoaderAfter(100);
-
+      this.fire('start-loading',100);
       let id = this.async(() => {
-        this.hideLoader();
+        this.fire('finish-loading');
         Editor.assetdb.queryAssets('db://assets/**/*', null, results => {
           this.clear();
           if (id !== this._asyncID) {

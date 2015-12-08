@@ -13,6 +13,10 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
+
+      .tree-view {
+        position: relative;
+      }
     </style>
 
     <editor-toolbar>
@@ -32,9 +36,15 @@
       </editor-button>
     </editor-toolbar>
 
-    <assets-tree id="tree" class="flex-1" droppable="file,asset,node"></assets-tree>
-
-    <assets-tree id="searchResult" class="flex-1" droppable="" hidden></assets-tree>
+    <div class="tree-view flex-1">
+      <assets-tree id="tree" class="fit" droppable="file,asset,node"></assets-tree>
+      <assets-tree id="searchResult" class="fit" droppable="" hidden></assets-tree>
+      <editor-loader id="loader" hidden
+        text="Loading"
+        mask
+      >
+      </editor-loader>
+    </div>
 
     <editor-toolbar>
       <span class="path flex-1">{{activeItemUrl}}</span>
