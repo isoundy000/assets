@@ -213,13 +213,12 @@
 
       results.forEach(result => {
         let baseNameNoExt = Path.basenameNoExt(result.path);
-        this.$.tree.addNewItemById(
-          result.uuid,
-          result.parentUuid,
-          baseNameNoExt,
-          Path.extname(result.path),
-          result.type
-        );
+        this.$.tree.addNewItemById( result.uuid, result.parentUuid, {
+          name: baseNameNoExt,
+          extname: Path.extname(result.path),
+          assetType: result.type,
+          isSubAsset: result.isSubAsset,
+        });
 
         if ( this._activeWhenCreated === result.url ) {
           this._activeWhenCreated = null;
@@ -232,9 +231,10 @@
             this.$.searchResult.addItem(this.curView(), newEL, {
               id: result.uuid,
               name: baseNameNoExt,
+              assetType: result.type,
+              extname: Path.extname(result.path),
+              isSubAsset: result.isSubAsset,
             });
-            newEL.assetType = result.type;
-            newEL.extname = Path.extname(result.path);
             newEL.setIcon( result.type );
             hintResults.push(result);
           }
