@@ -260,9 +260,17 @@
     },
 
     hintItemById ( uuid ) {
-      this.expand( uuid, true );
       let itemEL = this._id2el[uuid];
+
+      if ( this._canUseParent(itemEL) ) {
+        let parentEL = Polymer.dom(itemEL).parentNode;
+        if ( parentEL.folded ) {
+          itemEL = parentEL;
+        }
+      }
+
       if (itemEL) {
+        this.expand( itemEL._userId, true );
         this.scrollToItem(itemEL);
         itemEL.hint();
       }
@@ -289,7 +297,8 @@
           name: entry.name,
           folded: entry.type === 'mount' ? false : true,
           assetType: entry.type,
-          extname: entry.extname
+          extname: entry.extname,
+          isSubAsset: entry.isSubAsset
         });
         newEL.setIcon( entry.type );
       });
@@ -669,6 +678,16 @@
         el.conflicted = false;
       });
       this._conflictElements = [];
+    },
+
+    _canUseParent ( el ) {
+      let parentEL = Polymer.dom(el).parentNode;
+      let parentDOM = Polymer.dom(parentEL);
+      if ( el.isSubAsset && parentDOM.children[0] === el && el.name === parentEL.name ) {
+        return true;
+      }
+
+      return false;
     },
   });
 
