@@ -96,6 +96,8 @@
                 name: name,
                 extname: extname,
                 folded: false,
+                assetType: info.type,
+                isSubAsset: info.isSubAsset
               });
               newEL.setIcon(info.type);
             }
@@ -246,21 +248,25 @@
       }
     },
 
-    addNewItemById ( uuid, parentID, name, extname, assetType ) {
+    addNewItemById ( uuid, parentID, opts ) {
       let parentEL = this._id2el[parentID];
       let newEL = document.createElement('assets-item');
 
       this.addItem( parentEL, newEL, {
         id: uuid,
-        name: name,
-        assetType: assetType,
-        extname: extname,
+        name: opts.name,
+        extname: opts.extname,
+        assetType: opts.assetType,
+        isSubAsset: opts.isSubAsset,
       });
-      newEL.setIcon( assetType );
+      newEL.setIcon( opts.assetType );
     },
 
     hintItemById ( uuid ) {
       let itemEL = this._id2el[uuid];
+      if ( !itemEL ) {
+        return;
+      }
 
       if ( this._canUseParent(itemEL) ) {
         let parentEL = Polymer.dom(itemEL).parentNode;
@@ -294,10 +300,10 @@
         let newEL = document.createElement('assets-item');
         this.addItem(parentEL, newEL, {
           id: entry.uuid,
-          name: entry.name,
           folded: entry.type === 'mount' ? false : true,
-          assetType: entry.type,
+          name: entry.name,
           extname: entry.extname,
+          assetType: entry.type,
           isSubAsset: entry.isSubAsset
         });
         newEL.setIcon( entry.type );
