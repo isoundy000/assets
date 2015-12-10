@@ -569,7 +569,7 @@
 
             if ( srcEL.contains(targetEL) === false ) {
               let srcUrl = this.getUrl(srcEL);
-              Editor.assetdb.move( srcUrl, Url.join(destUrl, Url.basename(srcUrl) ) );
+              Editor.assetdb.move( srcUrl, Url.join(destUrl, Url.basename(srcUrl) ), true );
             }
           }
         }
@@ -595,7 +595,7 @@
       if ( targetEL ) {
         let srcUrl = this.getUrl(targetEL);
         let destUrl = Url.join(Url.dirname(srcUrl), this.$.nameInput.value + targetEL.extname);
-        Editor.assetdb.move( srcUrl, destUrl );
+        Editor.assetdb.move( srcUrl, destUrl, true );
 
         this.$.nameInput._renamingEL = null;
         this.$.nameInput.hidden = true;

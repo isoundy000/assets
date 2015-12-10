@@ -139,9 +139,7 @@
       }
       msg = msg.join('\n');
 
-      let Remote = require('remote');
-      let Dialog = Remote.require('dialog');
-      let result = Dialog.showMessageBox(Remote.getCurrentWindow(), {
+      let result = Editor.Dialog.messageBox({
         type: 'warning',
         buttons: ['Delete','Cancel'],
         title: 'Delete selected asset?',
