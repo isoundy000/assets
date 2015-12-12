@@ -297,16 +297,19 @@
           return;
         }
 
-        let newEL = document.createElement('assets-item');
-        this.addItem(parentEL, newEL, {
-          id: entry.uuid,
-          folded: entry.type === 'mount' ? false : true,
-          name: entry.name,
-          extname: entry.extname,
-          assetType: entry.type,
-          isSubAsset: entry.isSubAsset
-        });
-        newEL.setIcon( entry.type );
+
+        if ( !entry.hidden || Editor.showInternalMount ) {
+          let newEL = document.createElement('assets-item');
+          this.addItem(parentEL, newEL, {
+            id: entry.uuid,
+            folded: entry.type === 'mount' ? false : true,
+            name: entry.name,
+            extname: entry.extname,
+            assetType: entry.type,
+            isSubAsset: entry.isSubAsset
+          });
+          newEL.setIcon( entry.type );
+        }
       });
       console.timeEnd('assets-tree._build()');
     },
