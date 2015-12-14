@@ -293,12 +293,19 @@
         }
 
         if ( !parentEL ) {
-          console.warn(`Failed to add item ${entry.name}, parent not found.`);
+          // NOTE: do not warn it, the parent could be a hidden mount
+          // console.warn(`Failed to add item ${entry.name}, parent not found.`);
           return;
         }
 
+        // check if visible
+        let visible = !entry.hidden;
+        if ( entry.type === 'mount' && Editor.showInternalMount ) {
+          visible = true;
+        }
 
-        if ( !entry.hidden || Editor.showInternalMount ) {
+        //
+        if ( visible ) {
           let newEL = document.createElement('assets-item');
           this.addItem(parentEL, newEL, {
             id: entry.uuid,
@@ -306,10 +313,11 @@
             name: entry.name,
             extname: entry.extname,
             assetType: entry.type,
-            isSubAsset: entry.isSubAsset
+            isSubAsset: entry.isSubAsset,
           });
           newEL.setIcon( entry.type );
         }
+
       });
       console.timeEnd('assets-tree._build()');
     },
