@@ -6,7 +6,7 @@ const Fs = require('fire-fs');
 function getContextTemplate () {
   return [
     {
-      label: 'Create',
+      label: Editor.T('ASSETS.create'),
       submenu: getCreateTemplate(true)
     },
 
@@ -14,7 +14,7 @@ function getContextTemplate () {
     { type: 'separator' },
 
     {
-      label: 'Rename',
+      label: Editor.T('ASSETS.rename'),
       click () {
         let contextUuids = Editor.Selection.contexts('asset');
         if ( contextUuids.length > 0 ) {
@@ -24,7 +24,7 @@ function getContextTemplate () {
     },
 
     {
-      label: 'Delete',
+      label: Editor.T('ASSETS.delete'),
       click () {
         let contextUuids = Editor.Selection.contexts('asset');
         if ( contextUuids.length > 0 ) {
@@ -37,7 +37,7 @@ function getContextTemplate () {
     { type: 'separator' },
 
     {
-      label: Editor.isDarwin ? 'Reveal in Finder' : 'Show in Explorer',
+      label: Editor.isDarwin ? Editor.T('ASSETS.reveal_mac') : Editor.T('ASSETS.reveal_win'),
       click () {
         let contextUuids = Editor.Selection.contexts('asset');
         if ( contextUuids.length > 0 ) {
@@ -53,7 +53,7 @@ function getContextTemplate () {
     },
 
     {
-      label: Editor.isDarwin ? 'Reveal in Library' : 'Show in Library',
+      label: Editor.T('ASSETS.reveal_library'),
       visible: Editor.isDev,
       click () {
         let contextUuids = Editor.Selection.contexts('asset');
@@ -84,7 +84,7 @@ function getContextTemplate () {
     },
 
     {
-      label: 'Show UUID',
+      label: Editor.T('ASSETS.show_uuid'),
       visible: Editor.isDev,
       click () {
         let contextUuids = Editor.Selection.contexts('asset');
@@ -100,7 +100,7 @@ function getContextTemplate () {
     { type: 'separator' },
 
     {
-      label: 'Refresh',
+      label: Editor.T('ASSETS.refresh'),
       click () {
         let contextUuids = Editor.Selection.contexts('asset');
         if ( contextUuids.length > 0 ) {
@@ -138,7 +138,7 @@ function getCreateTemplate ( isContextMenu ) {
 
   return [
     {
-      label: 'Folder',
+      label: Editor.T('ASSETS.folder'),
       message: 'assets:new-asset',
       params: [
         { name: 'New Folder' },

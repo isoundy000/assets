@@ -13,7 +13,7 @@
   },
   "main": "main.js",
   "menus": {
-    "Panel/Assets": {
+    "i18n:MAIN_MENU.panel.title/i18n:MAIN_MENU.panel.assets": {
       "icon": "panel/icon.png",
       "accelerator": "CmdOrCtrl+2",
       "message": "assets:open"
@@ -23,7 +23,7 @@
     "panel": {
       "frame": "panel/panel.html",
       "type": "dockable",
-      "title": "Assets",
+      "title": "i18n:MAIN_MENU.panel.assets",
       "icon": "panel/icon.png",
       "width": 200,
       "shortcuts": {
