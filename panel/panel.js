@@ -450,6 +450,10 @@
           Editor.sendToCore('code-editor:open-by-uuid', uuid);
         } else if ( assetType === 'scene' ) {
           Editor.sendToCore('scene:open-by-uuid', uuid);
+        } else if ( assetType === 'sprite-frame' ) {
+            Editor.Panel.open('sprite-editor.panel', {
+                uuid: uuid
+            });
         }
       });
     },
