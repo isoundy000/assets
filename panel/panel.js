@@ -404,7 +404,15 @@
       Editor.assetdb.delete(urls);
     },
 
-    _onStartLoading ( event ) {
+    'assets:start-refresh' () {
+      this.showLoaderAfter(100);
+    },
+
+    'assets:end-refresh' () {
+      this.hideLoader();
+    },
+
+    showLoaderAfter ( ms ) {
       if (this.$.loader.hidden === false) {
         return;
       }
@@ -413,16 +421,24 @@
         return;
       }
 
-      this._loaderID = this.async(() => {
+      this._loaderID = setTimeout(() => {
         this.$.loader.hidden = false;
         this._loaderID = null;
-      }, event.detail);
+      }, ms);
+    },
+
+    hideLoader () {
+      clearTimeout(this._loaderID);
+      this._loaderID = null;
+      this.$.loader.hidden = true;
+    },
+
+    _onStartLoading ( event ) {
+      this.showLoaderAfter(event.detail);
     },
 
     _onFinishLoading () {
-      this.cancelAsync(this._loaderID);
-      this._loaderID = null;
-      this.$.loader.hidden = true;
+      this.hideLoader();
     },
 
     _onAssetsTreeReady () {

@@ -2,6 +2,7 @@
 
 const Shell = require('shell');
 const Fs = require('fire-fs');
+const Async = require('async');
 
 function getContextTemplate () {
   return [
@@ -102,13 +103,14 @@ function getContextTemplate () {
     {
       label: Editor.T('ASSETS.refresh'),
       click () {
+        Editor.sendToPanel('assets.panel', 'assets:start-refresh');
         let contextUuids = Editor.Selection.contexts('asset');
         if ( contextUuids.length > 0 ) {
           let urls = contextUuids.map(uuid => {
             return Editor.assetdb.uuidToUrl(uuid);
           });
           Editor.assetdb.watchOFF();
-          urls.forEach(url => {
+          Async.each( urls, ( url, done ) => {
             // import asset
             Editor.assetdb.refresh ( url, ( err, results ) => {
               if ( err ) {
@@ -117,7 +119,10 @@ function getContextTemplate () {
               }
 
               Editor.assetdb._handleRefreshResults(results);
+              done();
             });
+          }, () => {
+            Editor.sendToPanel('assets.panel', 'assets:end-refresh');
           });
           if ( !Editor.focused ) {
             Editor.assetdb.watchON();
