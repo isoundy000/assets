@@ -241,14 +241,14 @@
       event.stopPropagation();
     },
 
-    _onMouseEnter ( event ) {
+    _onIconMouseEnter ( event ) {
       event.stopPropagation();
-      this.fire('item-hover-in');
+      this.fire('icon-hover-in');
     },
 
-    _onMouseLeave ( event ) {
+    _onIconMouseLeave ( event ) {
       event.stopPropagation();
-      this.fire('item-hover-out');
+      this.fire('icon-hover-out');
     },
 
     insertItem ( el ) {
