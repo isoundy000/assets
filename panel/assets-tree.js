@@ -39,6 +39,7 @@
       'drop-area-accept': '_onDropAreaAccept',
       'item-selecting': '_onItemSelecting',
       'item-select': '_onItemSelect',
+      'item-name-click': '_onItemNameClick',
       'icon-hover-in': '_onIconHoverIn',
       'icon-hover-out': '_onIconHoverOut',
     },
@@ -441,9 +442,25 @@
       }
     },
 
+    _onItemNameClick ( event ) {
+      event.stopPropagation();
+
+      let selection = Editor.Selection.curSelection('asset');
+      let el = event.target;
+      if (
+        Editor.Selection.confirmed('asset') &&
+        selection.length === 1 &&
+        selection[0] === el._userId
+      ) {
+        setTimeout(() => {
+          this.rename(el);
+        }, 300);
+      }
+    },
+
     _onIconHoverIn ( event ) {
       event.stopPropagation();
-      this.showPreviewAfter(event.target,100);
+      this.showPreviewAfter(event.target,300);
     },
 
     _onIconHoverOut ( event ) {
