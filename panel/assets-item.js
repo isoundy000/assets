@@ -241,6 +241,16 @@
       event.stopPropagation();
     },
 
+    _onMouseEnter ( event ) {
+      event.stopPropagation();
+      this.fire('item-hover-in');
+    },
+
+    _onMouseLeave ( event ) {
+      event.stopPropagation();
+      this.fire('item-hover-out');
+    },
+
     insertItem ( el ) {
       _binaryInsert( this, el );
     },
