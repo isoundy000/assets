@@ -39,8 +39,8 @@
       'drop-area-accept': '_onDropAreaAccept',
       'item-selecting': '_onItemSelecting',
       'item-select': '_onItemSelect',
-      'item-hover-in': '_onItemHoverIn',
-      'item-hover-out': '_onItemHoverOut',
+      'icon-hover-in': '_onIconHoverIn',
+      'icon-hover-out': '_onIconHoverOut',
     },
 
     properties: {
@@ -306,7 +306,10 @@
         let w = 150;
         let h = 150;
         let iconOffset = EditorUI.offsetTo( element.$.icon, element.offsetParent );
-        let left = iconOffset.x - 10;
+        let left = iconOffset.x + element.$.icon.clientWidth - w/2;
+        if ( left < 0 ) {
+          left = 10;
+        }
         if ( left + w > element.offsetParent.clientWidth ) {
           left = element.offsetParent.clientWidth - w - 10;
         }
@@ -438,12 +441,12 @@
       }
     },
 
-    _onItemHoverIn ( event ) {
+    _onIconHoverIn ( event ) {
       event.stopPropagation();
-      this.showPreviewAfter(event.target,300);
+      this.showPreviewAfter(event.target,100);
     },
 
-    _onItemHoverOut ( event ) {
+    _onIconHoverOut ( event ) {
       event.stopPropagation();
       this.hidePreview();
     },

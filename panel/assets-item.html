@@ -31,21 +31,19 @@
     </style>
 
     <div id="bar"
-      on-mouseenter="_onMouseEnter"
-      on-mouseleave="_onMouseLeave"
       ></div>
     <div id="header"
-      on-mouseenter="_onMouseEnter"
-      on-mouseleave="_onMouseLeave"
       >
       <div class="wrapper">
         <i id="foldIcon" class$="{{_foldIconClass(folded)}}"
-           on-mousedown="_onFoldMouseDown"
-           on-click="_onFoldClick"
-           on-dblclick="_onFoldDblClick"
-           >
-        </i>
-        <div id="icon" draggable="false"></div>
+          on-mousedown="_onFoldMouseDown"
+          on-click="_onFoldClick"
+          on-dblclick="_onFoldDblClick"
+        ></i>
+        <div id="icon" draggable="false"
+          on-mouseenter="_onIconMouseEnter"
+          on-mouseleave="_onIconMouseLeave"
+        ></div>
         <span id="name" class$="{{_nameClass(name)}}">{{_nameText(name)}}</span>
       </div>
     </div>
