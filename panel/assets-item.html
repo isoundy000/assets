@@ -30,8 +30,14 @@
       }
     </style>
 
-    <div id="bar"></div>
-    <div id="header">
+    <div id="bar"
+      on-mouseenter="_onMouseEnter"
+      on-mouseleave="_onMouseLeave"
+      ></div>
+    <div id="header"
+      on-mouseenter="_onMouseEnter"
+      on-mouseleave="_onMouseLeave"
+      >
       <div class="wrapper">
         <i id="foldIcon" class$="{{_foldIconClass(folded)}}"
            on-mousedown="_onFoldMouseDown"

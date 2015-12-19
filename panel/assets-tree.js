@@ -39,6 +39,8 @@
       'drop-area-accept': '_onDropAreaAccept',
       'item-selecting': '_onItemSelecting',
       'item-select': '_onItemSelect',
+      'item-hover-in': '_onItemHoverIn',
+      'item-hover-out': '_onItemHoverOut',
     },
 
     properties: {
@@ -116,6 +118,8 @@
     },
 
     rename ( element ) {
+      this.hidePreview();
+
       let treeBCR = this.getBoundingClientRect();
       let elBCR = element.getBoundingClientRect();
       let offsetTop = elBCR.top - treeBCR.top - 1;
@@ -158,6 +162,8 @@
         return;
       }
 
+      this.hidePreview();
+
       if ( shiftSelect ) {
         if (this._shiftStartElement === null) {
           this._shiftStartElement = this._activeElement;
@@ -192,6 +198,8 @@
       if ( next === this._activeElement ) {
         return;
       }
+
+      this.hidePreview();
 
       if ( shiftSelect ) {
         if (this._shiftStartElement === null) {
@@ -280,6 +288,48 @@
         this.scrollToItem(itemEL);
         itemEL.hint();
       }
+    },
+
+    showPreviewAfter ( element, ms ) {
+      if ( element.assetType !== 'texture' ) {
+        return;
+      }
+
+      clearTimeout(this._previewID);
+
+      this._previewID = setTimeout(() => {
+        this._previewID = null;
+
+        // let offsetX = element.offsetLeft - element.offsetParent.scrollLeft;
+        // let offsetY = element.offsetTop - element.offsetParent.scrollTop;
+
+        let w = 150;
+        let h = 150;
+        let iconOffset = EditorUI.offsetTo( element.$.icon, element.offsetParent );
+        let left = iconOffset.x - 10;
+        if ( left + w > element.offsetParent.clientWidth ) {
+          left = element.offsetParent.clientWidth - w - 10;
+        }
+
+        let top = element.offsetTop - h - 10;
+        if ( top - element.offsetParent.scrollTop < 0 ) {
+          top = element.offsetTop + element.$.bar.offsetHeight + 10;
+        }
+
+        this.$.preview.hidden = false;
+        this.$.preview.style.left = `${left}px`;
+        this.$.preview.style.top = `${top}px`;
+        this.$.preview.style.width = `${w}px`;
+        this.$.preview.style.height = `${h}px`;
+
+        this.$.preview.style.backgroundImage = `url("uuid://${element._userId}")`;
+      }, ms);
+    },
+
+    hidePreview () {
+      clearTimeout(this._previewID);
+      this._previewID = null;
+      this.$.preview.hidden = true;
     },
 
     _build ( data ) {
@@ -388,6 +438,16 @@
       }
     },
 
+    _onItemHoverIn ( event ) {
+      event.stopPropagation();
+      this.showPreviewAfter(event.target,300);
+    },
+
+    _onItemHoverOut ( event ) {
+      event.stopPropagation();
+      this.hidePreview();
+    },
+
     _onMouseDown ( event ) {
       if ( event.which !== 1 ) {
         return;
@@ -413,12 +473,16 @@
     },
 
     _onScroll () {
+      this.hidePreview();
+
       this.$.content.scrollLeft = 0;
     },
 
     // drag & drop events
 
     _onDragStart ( event ) {
+      this.hidePreview();
+
       event.stopPropagation();
 
       let selection = Editor.Selection.curSelection('asset');
@@ -618,10 +682,16 @@
         return;
       }
 
-      if ( !event.detail.value ) {
-        this.$.nameInput._renamingEL = null;
-        this.$.nameInput.hidden = true;
-      }
+      this._renameFocused = event.detail.value;
+
+      // NOTE: it is possible user mouse click on rename input,
+      // which change the focused to false and then true again.
+      setTimeout(() => {
+        if ( !this._renameFocused ) {
+          this.$.nameInput._renamingEL = null;
+          this.$.nameInput.hidden = true;
+        }
+      },1);
     },
 
     // highlighting

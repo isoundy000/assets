@@ -60,6 +60,17 @@
       :host[focused] ::content assets-item[selected] > #bar {
         background-color: #059;
       }
+
+      #preview {
+        position: absolute;
+        background: rgba( 0, 0, 0, 0.5 );
+
+        margin-right: 2px;
+
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: 50% 50%;
+      }
     </style>
 
     <div id="content" class="fit" on-scroll="_onScroll">
@@ -72,6 +83,7 @@
         on-value-changed="_onRenameValueChanged"
         on-focused-changed="_onRenameFocusChanged"
       ></editor-input>
+      <div id="preview" hidden></div>
     </div>
   </template>
 
