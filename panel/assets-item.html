@@ -44,7 +44,9 @@
           on-mouseenter="_onIconMouseEnter"
           on-mouseleave="_onIconMouseLeave"
         ></div>
-        <span id="name" class$="{{_nameClass(name)}}">{{_nameText(name)}}</span>
+        <span id="name" class$="{{_nameClass(name)}}"
+          on-click="_onNameClick"
+          >{{_nameText(name)}}</span>
       </div>
     </div>
     <div id="content">
