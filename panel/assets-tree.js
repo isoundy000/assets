@@ -74,15 +74,15 @@
       if (!pattern) {
         return;
       }
-      this.cancelAsync(this._asyncID);
-      this._asyncID = null;
+      clearTimeout(this._searchID);
+      this._searchID = null;
 
       this.fire('start-loading',100);
-      let id = this.async(() => {
+      let searchID = setTimeout(() => {
         this.fire('finish-loading');
         Editor.assetdb.queryAssets('db://assets/**/*', null, results => {
           this.clear();
-          if (id !== this._asyncID) {
+          if (searchID !== this._searchID) {
             return;
           }
 
@@ -112,10 +112,9 @@
           });
           this.activeItemById(Editor.Selection.curActivate('asset'));
         });
+      }, 200);
 
-      }, 50);
-
-      this._asyncID = id;
+      this._searchID = searchID;
     },
 
     rename ( element ) {
