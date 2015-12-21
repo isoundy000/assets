@@ -226,11 +226,15 @@
     },
 
     _onNameClick ( event ) {
+      let info = Editor.Selection.curGlobalActivate();
+      if ( info.type !== 'asset' && info.id !== this._userId ) {
+        return;
+      }
+
       let selection = Editor.Selection.curSelection('asset');
       if (
         Editor.Selection.confirmed('asset') &&
-        selection.length === 1 &&
-        selection[0] === this._userId
+        selection.length === 1
       ) {
         event.stopPropagation();
 
