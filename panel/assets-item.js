@@ -227,7 +227,7 @@
 
     _onNameClick ( event ) {
       let info = Editor.Selection.curGlobalActivate();
-      if ( info.type !== 'asset' && info.id !== this._userId ) {
+      if ( !info || info.type !== 'asset' || info.id !== this._userId ) {
         return;
       }
 
