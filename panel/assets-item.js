@@ -217,15 +217,28 @@
         return;
       }
 
+      clearTimeout ( this._nameClickID );
       event.stopPropagation();
+
       this.fire('open-asset', {
         uuid: this._userId
       });
     },
 
-    _onNameClick () {
-      // NOTE: do not stopPropagation which will make onClick not invoke
-      this.fire('item-name-click');
+    _onNameClick ( event ) {
+      let selection = Editor.Selection.curSelection('asset');
+      if (
+        Editor.Selection.confirmed('asset') &&
+        selection.length === 1 &&
+        selection[0] === this._userId
+      ) {
+        event.stopPropagation();
+
+        this._nameClickID = setTimeout(() => {
+          this._nameClickID = null;
+          this.fire('item-rename');
+        }, 300);
+      }
     },
 
     _onFoldMouseDown ( event ) {
